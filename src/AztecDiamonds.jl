@@ -158,7 +158,8 @@ function diamond(N)
     return diamond!(t, t′, N)
 end
 
-using CUDA, FoldsCUDA, Adapt, Referenceables
+using FoldsCUDA, Adapt, Referenceables
+using CUDA: CUDA, CuArray
 
 # filling CUDA
 function fill_empty_blocks!(t′::Tiling, ex::CUDAEx; scratch::OffsetMatrix)
