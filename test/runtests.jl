@@ -1,5 +1,5 @@
 using AztecDiamonds
-using AztecDiamonds: diamond, Tiling, inds, NONE, UP, RIGHT
+using AztecDiamonds: inds, NONE, UP, RIGHT
 using Test
 
 function verify_tiling(t::Tiling)
@@ -28,6 +28,6 @@ end
     D = diamond(100)
     @test verify_tiling(D)
 
-    dr_path = AztecDiamonds.dr_path(D)
-    @test dr_path[end] == -0.5
+    dr = dr_path(D)
+    @test dr[end] == -0.5
 end

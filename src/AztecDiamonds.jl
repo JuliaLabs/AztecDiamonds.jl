@@ -3,6 +3,8 @@ module AztecDiamonds
 using OffsetArrays, Transducers, Folds
 using Transducers: @next, complete, Executor
 
+export Tiling, diamond, cuda_diamond, dr_path
+
 @enum Edge::UInt8 NONE UP RIGHT SHOULD_FILL
 
 inds(N) = (1-N:N, 1-N:N)
