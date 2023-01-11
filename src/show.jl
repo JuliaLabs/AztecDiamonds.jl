@@ -1,4 +1,5 @@
-using Colors, ImageShow
+using Colors
+import ImageShow
 
 function to_img(t::Tiling)
     img = fill(colorant"transparent", inds(t.N))
@@ -14,7 +15,7 @@ function to_img(t::Tiling)
     img
 end
 
-Base.showable(::MIME"image/png", ::Tiling) = true
+Base.showable(::MIME"image/png", (; N)::Tiling) = N > 0
 
 function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
     show(io, MIME("image/png"), to_img(t); kw...)
