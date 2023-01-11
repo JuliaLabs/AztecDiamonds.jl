@@ -1,0 +1,13 @@
+name = "AztecDiamonds"
+uuid = "8762d9c5-fcab-4007-8fd1-c6de73397726"
+authors = ["Simeon David Schaub <schaub@mit.edu> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

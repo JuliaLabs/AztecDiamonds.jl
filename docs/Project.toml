@@ -1,0 +1,3 @@
+[deps]
+AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
