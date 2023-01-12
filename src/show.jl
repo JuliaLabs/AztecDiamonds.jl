@@ -18,5 +18,7 @@ end
 Base.showable(::MIME"image/png", (; N)::Tiling) = N > 0
 
 function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
-    show(io, MIME("image/png"), to_img(t); kw...)
+    io = IOContext(io, :full_fidelity => true)
+    img = to_img(adapt(Array, t))
+    show(io, MIME("image/png"), img; kw...)
 end
