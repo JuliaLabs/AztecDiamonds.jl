@@ -16,6 +16,16 @@ Referenceables = "42d2dcc6-99eb-4e98-b66c-637b7d73030e"
 Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
+Adapt = "3"
+CUDA = "3"
+Colors = "0.12"
+Folds = "0.2"
+FoldsCUDA = "0.1"
+ImageIO = "0.6"
+ImageShow = "0.3"
+OffsetArrays = "1"
+Referenceables = "0.1"
+Transducers = "0.4"
 julia = "1.7"
 
 [extras]
