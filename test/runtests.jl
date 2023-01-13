@@ -24,10 +24,12 @@ function verify_tiling(t::Tiling)
     return true
 end
 
-@testset "AztecDiamonds.jl" begin
-    D = diamond(100)
-    @test verify_tiling(D)
+import CUDA
 
-    dr = dr_path(D)
-    @test dr[end] == -0.5
+if !(haskey(ENV, "BUILDKITE") && CUDA.functional()) # skip non-gpu tests on Buildkite CI
+    include("core.jl")
+end
+
+if CUDA.functional()
+    include("cuda.jl")
 end
