@@ -16,9 +16,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "Examples" => [
-            "Basics" => "https://julia.mit.edu/AztecDiamonds.jl/examples/dev/notebook.html",
-        ],
+        #"Examples" => [
+        #    "Basics" => "https://julia.mit.edu/AztecDiamonds.jl/examples/dev/notebook.html",
+        #],
     ],
 )
 
