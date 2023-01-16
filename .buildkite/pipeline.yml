@@ -20,7 +20,6 @@ steps:
       queue: "juliagpu"
       cuda: "*"
     commands: |
-      cd examples
       julia -e 'import Pkg
         tmpenv = mktempdir()
         Pkg.activate(tmpenv)
@@ -31,24 +30,23 @@ steps:
         ])
 
         import Pluto
-        Pluto.PkgUtils.activate_notebook("notebook.jl")
+        Pluto.PkgUtils.activate_notebook("examples/notebook.jl")
         Pkg.add([Pkg.PackageSpec(path=dirname(pwd()))])
         Pkg.activate(tmpenv)
 
         import PlutoSliderServer
-        PlutoSliderServer.github_action(".";
+        PlutoSliderServer.github_action("examples";
           Export_cache_dir="pluto_state_cache",
           Export_baked_notebookfile=false,
           Export_baked_state=false,
           # more parameters can go here
         )
         using Documenter
-        rm(".documenter") # don't upload documenter key
         deploydocs(;
           repo="github.com/JuliaLabs/AztecDiamonds.jl",
           devbranch="main",
           dirname="examples",
-          target=pwd(),
+          target="examples",
         )'
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 30
