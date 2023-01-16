@@ -8,7 +8,7 @@ using InteractiveUtils
 using AztecDiamonds, Plots
 
 # ╔═╡ 73be3cb4-3106-441c-8244-9f0d831dbcca
-using Adapt
+using Adapt, CUDA
 
 # ╔═╡ ecde5a72-691b-4a9a-b0a8-2b740e42a710
 D = diamond(200)
@@ -22,6 +22,18 @@ end
 # ╔═╡ 8bb0983b-103e-4cf8-9a9f-95feb90df054
 cuda_diamond(2000)
 
+# ╔═╡ 17088265-c4da-425a-9caa-b51298b55572
+CUDA.@sync cuda_diamond(2000)
+
+# ╔═╡ 379d6122-b63a-46e1-ba5f-5cc2f4f22fce
+begin
+	struct Foo x end
+	function Base.show(io, ::MIME"image/png", (; x)::Foo)
+		show(IOContext(io, :full_fidelity => true), MIME("image/png"), x)
+	end
+	Foo(AztecDiamonds.to_img(adapt(Array, cuda_diamond(2000))))
+end
+
 # ╔═╡ 698b9232-4117-421f-b561-6c93d606f6b9
 AztecDiamonds.to_img(adapt(Array, cuda_diamond(2000)))
 
@@ -30,11 +42,13 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
 Adapt = "~3.4.0"
 AztecDiamonds = "~0.1.0"
+CUDA = "~3.12.1"
 Plots = "~1.38.2"
 """
 
@@ -44,7 +58,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "3c71902f922761b4af1837f59da88af29a674eea"
+project_hash = "f0ab79d79574e2cd36a24ec69e990489d8f2d965"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1391,7 +1405,9 @@ version = "1.4.1+0"
 # ╠═ecde5a72-691b-4a9a-b0a8-2b740e42a710
 # ╠═1cf94d6d-a0bc-474b-b479-5b4f4c916ea5
 # ╠═8bb0983b-103e-4cf8-9a9f-95feb90df054
+# ╠═17088265-c4da-425a-9caa-b51298b55572
 # ╠═73be3cb4-3106-441c-8244-9f0d831dbcca
+# ╠═379d6122-b63a-46e1-ba5f-5cc2f4f22fce
 # ╠═698b9232-4117-421f-b561-6c93d606f6b9
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
