@@ -1,6 +1,3 @@
-#env:
-#  SECRET_CODECOV_TOKEN: "..."
-
 steps:
   - label: "Julia v1"
     plugins:
@@ -14,3 +11,47 @@ steps:
       cuda: "*"
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 30
+
+  - label: "Pluto Example Notebook"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1"
+    agents:
+      queue: "juliagpu"
+      cuda: "*"
+    commands: |
+      cd examples
+      julia -e 'import Pkg
+        tmpenv = mktempdir()
+        Pkg.activate(tmpenv)
+        Pkg.add([
+          Pkg.PackageSpec(name="PlutoSliderServer", version="0.3.2-0.3"),
+          Pkg.PackageSpec(name="Documenter", version="0.27"),
+          Pkg.PackageSpec(name="Pluto"),
+        ])
+
+        import Pluto
+        Pluto.PkgUtils.activate_notebook("notebook.jl")
+        Pkg.add([Pkg.PackageSpec(path=dirname(pwd()))])
+        Pkg.activate(tmpenv)
+
+        import PlutoSliderServer
+        PlutoSliderServer.github_action(".";
+          Export_cache_dir="pluto_state_cache",
+          Export_baked_notebookfile=false,
+          Export_baked_state=false,
+          # more parameters can go here
+        )'
+        using Documenter
+        deploydocs(;
+          repo="github.com/JuliaLabs/AztecDiamonds.jl",
+          devbranch="main",
+          dirname="examples",
+          target=pwd(),
+        )
+    if: build.message !~ /\[skip tests\]/
+    timeout_in_minutes: 30
+
+env:
+#  SECRET_CODECOV_TOKEN: "..."
+  SECRET_DOCUMENTER_KEY: "ewCeTJpUZQ/4ML76ZSmpQT8e6O8a+Z0G9WLAVwhH1xaP43ALFbCLP4Z9Rjyb0aC5TdjCPqt9tVF4OkQX9AXHE7L3h9jAmCyHoyl3tqhbGUUx/Nw3GSCn0eP5c9CbKKsE3JPDzIRS08OGXBwk6HIFRP3Ay1sGcth/QSzKj5tUtsby7EzbK7l3yEbXTkAxRBcoB8xcatMYeObIJsEgK2Kqy9UAWwyIInk4BZ1QqxcvIlrDdRr7zjZV2CZPTT3icCN8j79rmdsYBYvsK5oWYvxuoRbfQFPOPYt/XN3kDGdentCDr6v8be3iPBoD0U1teGJbc+JqJUAM2WhlrJ3KvQdafg==;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"
