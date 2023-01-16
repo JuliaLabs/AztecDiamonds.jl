@@ -47,6 +47,7 @@ steps:
           devbranch="main",
           dirname="examples",
           target="examples",
+          push_preview=true,
         )'
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 30
