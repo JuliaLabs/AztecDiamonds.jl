@@ -41,14 +41,14 @@ steps:
           Export_baked_notebookfile=false,
           Export_baked_state=false,
           # more parameters can go here
-        )'
+        )
         using Documenter
         deploydocs(;
           repo="github.com/JuliaLabs/AztecDiamonds.jl",
           devbranch="main",
           dirname="examples",
           target=pwd(),
-        )
+        )'
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 30
 
