@@ -23,7 +23,7 @@ end
 cuda_diamond(2000)
 
 # ╔═╡ 698b9232-4117-421f-b561-6c93d606f6b9
-to_img(adapt(Array, cuda_diamond(2000)))
+AztecDiamonds.to_img(adapt(Array, cuda_diamond(2000)))
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
