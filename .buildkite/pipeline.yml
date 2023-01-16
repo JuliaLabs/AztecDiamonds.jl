@@ -31,7 +31,7 @@ steps:
 
         import Pluto
         Pluto.PkgUtils.activate_notebook("examples/notebook.jl")
-        Pkg.add([Pkg.PackageSpec(path=dirname(pwd()))])
+        Pkg.add([Pkg.PackageSpec(path=pwd())])
         Pkg.activate(tmpenv)
 
         import PlutoSliderServer
