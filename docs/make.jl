@@ -17,7 +17,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Examples" => [
-            "Basics" => "../examples/notebook.html",
+            "Basics" => "https://julia.mit.edu/AztecDiamonds.jl/examples/dev/notebook.html",
         ],
     ],
 )
