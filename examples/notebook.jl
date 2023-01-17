@@ -16,17 +16,22 @@ begin
 	plot!(-200:200, parent(dr_path(D)); lw=3, label="DR-path")
 end
 
+# ╔═╡ ab0968e2-43c7-4610-87ba-47433c003081
+import CUDA
+
 # ╔═╡ 8bb0983b-103e-4cf8-9a9f-95feb90df054
-cuda_diamond(2000)
+CUDA.@sync cuda_diamond(2000) # synchronization is needed due to Pluto printing issues
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 
 [compat]
 AztecDiamonds = "~0.1.0"
+CUDA = "~3.12.1"
 Plots = "~1.38.2"
 """
 
@@ -36,7 +41,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "78ee2fbdf79e78657d39945c8a5b5e0a786baa8c"
+project_hash = "3f412eff7b5278ebf23bcd8a8df92e3e9e4b124e"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -1382,6 +1387,7 @@ version = "1.4.1+0"
 # ╠═a609b8a8-04ac-4533-9a33-61ea33805846
 # ╠═ecde5a72-691b-4a9a-b0a8-2b740e42a710
 # ╠═1cf94d6d-a0bc-474b-b479-5b4f4c916ea5
+# ╠═ab0968e2-43c7-4610-87ba-47433c003081
 # ╠═8bb0983b-103e-4cf8-9a9f-95feb90df054
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
