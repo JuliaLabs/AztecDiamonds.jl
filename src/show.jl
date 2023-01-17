@@ -5,10 +5,10 @@ function to_img(t::Tiling)
     img = fill(colorant"transparent", inds(t.N))
     foreach(faces(t)) do (i, j, isdotted)
         if t[i, j] == UP
-            col = isdotted ? colorant"red" : colorant"yellow"
+            col = isdotted ? colorant"red" : colorant"green"
             img[i, j] = img[i+1, j] = col
         elseif t[i, j] == RIGHT
-            col = isdotted ? colorant"green" : colorant"blue"
+            col = isdotted ? colorant"yellow" : colorant"blue"
             img[i, j] = img[i, j+1] = col
         end
     end
