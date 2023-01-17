@@ -17,7 +17,7 @@ end
 
 Base.showable(::MIME"image/png", (; N)::Tiling) = N > 0
 
-function Base.show(io::IO, ::MIME"image/png", t::Tiling{<:CuMatrix}; kw...)
+function Base.show(io::IO, ::MIME"image/png", t::Tiling{<:CuArray}; kw...)
     t = CUDA.@sync adapt(Array, t)
     show(io, MIME("image/png"), t; kw...)
 end
