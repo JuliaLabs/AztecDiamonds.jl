@@ -7,13 +7,16 @@ using InteractiveUtils
 # ╔═╡ a609b8a8-04ac-4533-9a33-61ea33805846
 using AztecDiamonds, Plots
 
+# ╔═╡ 84f88e89-c55e-41ba-97ad-fd561458c7e9
+N = 200
+
 # ╔═╡ ecde5a72-691b-4a9a-b0a8-2b740e42a710
-D = diamond(200)
+D = diamond(N)
 
 # ╔═╡ 1cf94d6d-a0bc-474b-b479-5b4f4c916ea5
 begin
-	plot(AztecDiamonds.to_img(D); yflip=false)
-	plot!(-200:200, parent(dr_path(D)); lw=3, label="DR-path")
+	plot(-N:N, -N:N, Plots.Surface(AztecDiamonds.to_img(D)); seriestype=:image)
+	plot!(-N:N, parent(dr_path(D)); lw=3, label="DR-path")
 end
 
 # ╔═╡ ab0968e2-43c7-4610-87ba-47433c003081
@@ -1385,6 +1388,7 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╠═a609b8a8-04ac-4533-9a33-61ea33805846
+# ╠═84f88e89-c55e-41ba-97ad-fd561458c7e9
 # ╠═ecde5a72-691b-4a9a-b0a8-2b740e42a710
 # ╠═1cf94d6d-a0bc-474b-b479-5b4f4c916ea5
 # ╠═ab0968e2-43c7-4610-87ba-47433c003081
