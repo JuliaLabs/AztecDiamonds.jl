@@ -5,7 +5,10 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ a609b8a8-04ac-4533-9a33-61ea33805846
-using AztecDiamonds, CairoMakie
+begin
+	using AztecDiamonds, CairoMakie
+	CairoMakie.activate!(type = "svg")
+end
 
 # ╔═╡ 84f88e89-c55e-41ba-97ad-fd561458c7e9
 N = 200
@@ -17,7 +20,6 @@ D = diamond(N)
 let
 	f = Figure()
 	ax = Axis(f[1, 1]; aspect=1)
-	#image!(ax, -N:N, -N:N, parent(AztecDiamonds.to_img(D)))
 	plot!(ax, D; domino_padding=0)
 	lines!(ax, -N:N, parent(dr_path(D)); linewidth=3, label="DR-path", color=:orange)
 	axislegend(ax)
