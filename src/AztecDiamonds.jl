@@ -217,5 +217,6 @@ end
 
 include("show.jl")
 include("dr_path.jl")
+include("makie.jl")
 
 end

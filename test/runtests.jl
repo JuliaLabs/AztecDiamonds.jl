@@ -28,6 +28,8 @@ import CUDA
 
 if !(haskey(ENV, "BUILDKITE") && CUDA.functional()) # skip non-gpu tests on Buildkite CI
     include("core.jl")
+    include("show.jl")
+    include("makie.jl")
 end
 
 if CUDA.functional()
