@@ -38,7 +38,7 @@ end
 MakieCore.plottype(::Tiling) = TilingPlot
 
 function MakieCore.plot!(x::TilingPlot{<:Tuple{Tiling}})
-    t = x[:t][]
+    t = adapt(Array, x[:t][])
     tiles, colors, arrow_pts, arrows = prepare_plot(t; pad=x.domino_padding[])
     poly!(x, tiles; color=colors, strokewidth=x.domino_stroke, axis=(; aspect=1))
     x.show_arrows[] && arrows!(x, arrow_pts, arrows)
