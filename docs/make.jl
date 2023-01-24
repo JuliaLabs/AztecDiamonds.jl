@@ -6,7 +6,7 @@ DocMeta.setdocmeta!(AztecDiamonds, :DocTestSetup, :(using AztecDiamonds); recurs
 makedocs(;
     modules=[AztecDiamonds],
     authors="Simeon David Schaub <schaub@mit.edu> and contributors",
-    repo="https://github.com/julialabs/AztecDiamonds.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/JuliaLabs/AztecDiamonds.jl/blob/{commit}{path}#{line}",
     sitename="AztecDiamonds.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
@@ -23,6 +23,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/julialabs/AztecDiamonds.jl",
+    repo="github.com/JuliaLabs/AztecDiamonds.jl",
     devbranch="main",
 )
