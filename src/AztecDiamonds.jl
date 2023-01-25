@@ -26,6 +26,11 @@ end
 Base.@propagate_inbounds function Base.get(t::Tiling, (i, j)::NTuple{2, Integer}, def)
     return checkbounds(Bool, t, i, j) ? t[i, j] : def
 end
+Base.:(==)(t1::Tiling, t2::Tiling) = t1.N == t2.N && t1.x == t2.x
+const TILING_SEED = 0x493d55c7378becd5 % UInt
+function Base.hash((; N, x)::Tiling, h::UInt)
+    return hash(x, hash(N, hash(TILING_SEED, h)))
+end
 Base.copy((; N, x)::Tiling) = Tiling(N, copy(x))
 
 
@@ -71,8 +76,10 @@ function _foreach(f, itr, ex)
         let (; N) = itr
             N == 0 && return
             Folds.foreach(CartesianIndices(inds(N)), ex) do I
+                ## COV_EXCL_START
                 i, j = Tuple(I)
                 abs(i-.5) + abs(j-.5) ≤ N && f((i, j, isodd(i+j-N)))
+                ## COV_EXCL_STOP
             end
         end
     elseif itr isa BlockIterator
@@ -80,12 +87,14 @@ function _foreach(f, itr, ex)
         (; N) = t
         good = itr isa BlockIterator{true}
         _foreach(faces(t), ex) do (i, j, isdotted)
+            ## COV_EXCL_START
             tile = @inbounds t[i, j]
             @inbounds if tile == UP && j < N && t[i, j+1] == UP
                 good == isdotted && f((i, j, isdotted))
             elseif tile == RIGHT && i < N && t[i+1, j] == RIGHT
                 good == isdotted && f((i, j, isdotted))
             end
+            ## COV_EXCL_STOP
         end
         end
     else
@@ -164,6 +173,7 @@ using CUDA: CUDA, CuArray
 # filling CUDA
 function fill_empty_blocks!(t′::Tiling, ex::CUDAEx; scratch::OffsetMatrix)
     _foreach(faces(t′), ex) do (i, j)
+        ## COV_EXCL_START
         @inbounds if t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
             should_fill = true
             i′ = i - 1
@@ -189,8 +199,10 @@ function fill_empty_blocks!(t′::Tiling, ex::CUDAEx; scratch::OffsetMatrix)
                 scratch[i, j] = SHOULD_FILL
             end
         end
+        ## COV_EXCL_STOP
     end
     _foreach(faces(t′), ex) do (i, j)
+        ## COV_EXCL_START
         @inbounds if scratch[i, j] == SHOULD_FILL
             if rand(Bool)
                 t′[i, j] = t′[i, j+1] = UP
@@ -198,6 +210,7 @@ function fill_empty_blocks!(t′::Tiling, ex::CUDAEx; scratch::OffsetMatrix)
                 t′[i, j] = t′[i+1, j] = RIGHT
             end
         end
+        ## COV_EXCL_STOP
     end
     return t′
 end
@@ -205,7 +218,9 @@ end
 Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 function Base.fill!(a::SubArray{T, N, OffsetArray{T, N, CuArray{T, N, CUDA.Mem.DeviceBuffer}}}, x) where {T, N}
     length(a) != 0 && Folds.foreach(referenceable(a), CUDAEx()) do a
+        ## COV_EXCL_START
         a[] = x
+        ## COV_EXCL_STOP
     end
     return a
 end
