@@ -40,7 +40,7 @@ end
 faces((; N)::Tiling) = DiamondFaces(N)
 Base.eltype(::DiamondFaces) = Tuple{Int, Int, Bool}
 Base.length((; N)::DiamondFaces) = N * (N+1) * 2
-function Transducers.__foldl__(rf, val, (; N)::DiamondFaces)
+function Transducers.__foldl__(rf::R, val::V, (; N)::DiamondFaces)
     for j in 1-N:N
         j′ = max(j, 1-j)
         for i in j′-N:N-j′+1
