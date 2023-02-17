@@ -11,3 +11,7 @@ using Images
 
     @test !Base.showable("image/png", Tiling(0))
 end
+
+@testset "summary" begin
+    @test summary(Tiling(2)) == "2-order Tiling{Matrix{AztecDiamonds.Edge}}"
+end

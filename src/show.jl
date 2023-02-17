@@ -1,6 +1,8 @@
 using Colors
 import ImageShow
 
+Base.summary(io::IO, t::Tiling) = print(io, t.N, "-order ", typeof(t))
+
 function to_img(t::Tiling)
     img = fill(colorant"transparent", inds(t.N))
     foreach(faces(t)) do (i, j, isdotted)
