@@ -19,7 +19,7 @@ Transducers = "28d57a85-8fef-5791-bfe6-a80928e7c999"
 
 [compat]
 Adapt = "3"
-CUDA = "3"
+CUDA = "3, 4"
 Colors = "0.12"
 Folds = "0.2"
 FoldsCUDA = "0.1"
