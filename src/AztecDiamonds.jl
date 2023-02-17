@@ -93,9 +93,9 @@ function _foreach(f, itr, ex)
         _foreach(faces(t), ex) do (i, j, isdotted)
             ## COV_EXCL_START
             tile = @inbounds t[i, j]
-            @inbounds if tile == UP && j < N && t[i, j+1] == UP
+            @inbounds if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
                 good == isdotted && f((i, j, isdotted))
-            elseif tile == RIGHT && i < N && t[i+1, j] == RIGHT
+            elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
                 good == isdotted && f((i, j, isdotted))
             end
             ## COV_EXCL_STOP
