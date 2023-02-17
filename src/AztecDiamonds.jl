@@ -14,13 +14,17 @@ struct Tiling{M<:AbstractMatrix{Edge}}
     x::OffsetMatrix{Edge, M}
 end
 Tiling(N::Int; sizehint=N) = Tiling(N, fill(NONE, inds(sizehint)))
-Base.checkbounds(::Type{Bool}, (; N)::Tiling, i, j) = abs(i-.5) + abs(j-.5) ≤ N
+Base.checkbounds(::Type{Bool}, (; N)::Tiling, i, j) = abs(2i-1) + abs(2j-1) ≤ 2N
+function Base.checkbounds(t::Tiling, i, j)
+    checkbounds(Bool, t, i, j) || throw(BoundsError(t, (i, j)))
+    return nothing
+end
 Base.@propagate_inbounds function Base.getindex(t::Tiling, i, j)
-    @boundscheck checkbounds(Bool, t, i, j)
+    @boundscheck checkbounds(t, i, j)
     return t.x[i, j]
 end
 Base.@propagate_inbounds function Base.setindex!(t::Tiling, x, i, j)
-    @boundscheck checkbounds(Bool, t, i, j)
+    @boundscheck checkbounds(t, i, j)
     return setindex!(t.x, x, i, j)
 end
 Base.@propagate_inbounds function Base.get(t::Tiling, (i, j)::NTuple{2, Integer}, def)
@@ -60,9 +64,9 @@ function Transducers.asfoldable((; t)::BlockIterator{good}) where {good}
     (; N) = t
     return faces(t) |> Filter() do (i, j, isdotted)
         tile = @inbounds t[i, j]
-        @inbounds if tile == UP && j < N && t[i, j+1] == UP
+        @inbounds if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
             return good == isdotted
-        elseif tile == RIGHT && i < N && t[i+1, j] == RIGHT
+        elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
             return good == isdotted
         end
         return false
@@ -78,7 +82,7 @@ function _foreach(f, itr, ex)
             Folds.foreach(CartesianIndices(inds(N)), ex) do I
                 ## COV_EXCL_START
                 i, j = Tuple(I)
-                abs(i-.5) + abs(j-.5) ≤ N && f((i, j, isodd(i+j-N)))
+                abs(2i-1) + abs(2j-1) ≤ 2N && f((i, j, isodd(i+j-N)))
                 ## COV_EXCL_STOP
             end
         end

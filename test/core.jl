@@ -13,6 +13,12 @@ end
     @test D′ == D
     @test isequal(D′, D)
     @test hash(D′) == hash(D)
+
+    D[0, 0] = NONE
+    @test D[0, 0] == NONE
+    @test_throws BoundsError D[51, 51]
+    @test_throws BoundsError D[-51, -51]
+    @test_throws BoundsError D[51, 51] = NONE
 end
 
 using AztecDiamonds: DiamondFaces
