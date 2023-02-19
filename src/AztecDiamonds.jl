@@ -14,11 +14,14 @@ struct Tiling{M<:AbstractMatrix{Edge}}
     x::OffsetMatrix{Edge, M}
 end
 Tiling(N::Int; sizehint=N) = Tiling(N, fill(NONE, inds(sizehint)))
-Base.checkbounds(::Type{Bool}, (; N)::Tiling, i, j) = abs(2i-1) + abs(2j-1) ≤ 2N
+
+in_diamond(N, i, j) = abs(2i-1) + abs(2j-1) ≤ 2N
+Base.checkbounds(::Type{Bool}, (; N)::Tiling, i, j) = in_diamond(N, i, j)
 function Base.checkbounds(t::Tiling, i, j)
     checkbounds(Bool, t, i, j) || throw(BoundsError(t, (i, j)))
     return nothing
 end
+
 Base.@propagate_inbounds function Base.getindex(t::Tiling, i, j)
     @boundscheck checkbounds(t, i, j)
     return t.x[i, j]
@@ -30,6 +33,7 @@ end
 Base.@propagate_inbounds function Base.get(t::Tiling, (i, j)::NTuple{2, Integer}, def)
     return checkbounds(Bool, t, i, j) ? t[i, j] : def
 end
+
 Base.:(==)(t1::Tiling, t2::Tiling) = t1.N == t2.N && t1.x == t2.x
 const TILING_SEED = 0x493d55c7378becd5 % UInt
 function Base.hash((; N, x)::Tiling, h::UInt)
@@ -60,16 +64,19 @@ struct BlockIterator{good, T<:Tiling} <: Transducers.Foldable
     t::T
     BlockIterator{good}(t::T) where {good, T<:Tiling} = new{good, T}(t)
 end
-function Transducers.asfoldable((; t)::BlockIterator{good}) where {good}
+Base.@propagate_inbounds function isblock(t::Tiling, i, j, ::Val{good}) where {good}
     (; N) = t
+    tile = t[i, j]
+    if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
+        return good == isdotted
+    elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
+        return good == isdotted
+    end
+    return false
+end
+function Transducers.asfoldable((; t)::BlockIterator{good}) where {good}
     return faces(t) |> Filter() do (i, j, isdotted)
-        tile = @inbounds t[i, j]
-        @inbounds if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
-            return good == isdotted
-        elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
-            return good == isdotted
-        end
-        return false
+        return @inbounds isblock(t, i, j, Val(good))
     end
 end
 
@@ -234,6 +241,7 @@ function cuda_diamond(N)
     return diamond!(t, t′, N; ex=CUDAEx())
 end
 
+include("ka.jl")
 include("show.jl")
 include("dr_path.jl")
 include("makie.jl")
