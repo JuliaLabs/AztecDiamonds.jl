@@ -1,7 +1,7 @@
 using KernelAbstractions
 
 # destruction
-function remove_bad_blocks_kernel!(t::Tiling)
+@kernel function remove_bad_blocks_kernel!(t::Tiling)
     (; N) = t
     i, j = @index(Global, NTuple) .- N
 
@@ -13,12 +13,10 @@ function remove_bad_blocks_kernel!(t::Tiling)
         end
         t[i, j] = NONE
     end
-
-    nothing
 end
 
 # sliding
-function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))
+@kernel function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))
     (; N) = t
     i, j = @index(Global, NTuple) .- N
 
@@ -32,11 +30,9 @@ function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))
             t′[i+inc, j] = RIGHT
         end
     end
-
-    nothing
 end
 
-function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
+@kernel function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
     (; N) = t′
     i, j = @index(Global, NTuple) .- N
 
@@ -52,7 +48,7 @@ function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
                     break
                 end
             end
-            should_fill || return
+            should_fill || @goto foo
             j′ = j - 1
             while checkbounds(Bool, t′, i, j′)
                 if t′[i, j′] == NONE && get(t′, (i-1, j′), NONE) != UP && get(t′, (i, j′-1), NONE) != RIGHT
@@ -66,9 +62,12 @@ function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
                 scratch[i, j] = SHOULD_FILL
             end
         end
+    end
+    @label foo
 
-        @synchronize
+    @synchronize
 
+    @inbounds if in_diamond(N, i, j)
         if scratch[i, j] == SHOULD_FILL
             if rand(Bool)
                 t′[i, j] = t′[i, j+1] = UP
@@ -77,10 +76,15 @@ function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
             end
         end
     end
-    return t′
+end
+
+@kernel function zero_kernel!(t::Tiling, N)
+    i, j = @index(Global, NTuple) .- N
+    @inbounds t.x[i, j] = NONE
 end
 
 function ka_diamond!(t, t′, N; dev)
+    zero! = zero_kernel!(dev)
     remove_bad_blocks! = remove_bad_blocks_kernel!(dev)
     slide_tiles! = slide_tiles_kernel!(dev)
     fill_empty_blocks! = fill_empty_blocks_kernel!(dev)
@@ -88,11 +92,12 @@ function ka_diamond!(t, t′, N; dev)
 
     ndrange = (0, 0)
     for N in 1:N
-        (; x) = t′
-        view(x, inds(N-1)...) .= NONE
-        t′ = Tiling(N, x)
-        ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
-        ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
+        N > 1 && (ev = zero!(t′, N-1; ndrange, dependencies=(ev,)))
+        t′ = Tiling(N, t′.x)
+        if N > 1
+            ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
+            ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
+        end
         ndrange = (2N, 2N)
         ev = fill_empty_blocks!(t′, t.x; ndrange, dependencies=(ev,))
         t, t′ = t′, t

@@ -66,6 +66,7 @@ struct BlockIterator{good, T<:Tiling} <: Transducers.Foldable
 end
 Base.@propagate_inbounds function isblock(t::Tiling, i, j, ::Val{good}) where {good}
     (; N) = t
+    isdotted = isodd(i+j-N)
     tile = t[i, j]
     if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
         return good == isdotted
