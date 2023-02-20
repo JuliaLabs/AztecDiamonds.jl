@@ -79,3 +79,30 @@ function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
     end
     return t′
 end
+
+function ka_diamond!(t, t′, N; dev)
+    remove_bad_blocks! = remove_bad_blocks_kernel!(dev)
+    slide_tiles! = slide_tiles_kernel!(dev)
+    fill_empty_blocks! = fill_empty_blocks_kernel!(dev)
+    ev = Event(dev)
+
+    ndrange = (0, 0)
+    for N in 1:N
+        (; x) = t′
+        view(x, inds(N-1)...) .= NONE
+        t′ = Tiling(N, x)
+        ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
+        ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
+        ndrange = (2N, 2N)
+        ev = fill_empty_blocks!(t′, t.x; ndrange, dependencies=(ev,))
+        t, t′ = t′, t
+    end
+    wait(ev)
+    return t
+end
+
+function ka_diamond(N, Backend)
+    mem = ntuple(_ -> Backend.fill(NONE, 2N, 2N), 2)
+    t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
+    return ka_diamond!(t, t′, N; dev=KernelAbstractions.get_device(mem[1]))
+end
