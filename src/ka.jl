@@ -32,7 +32,7 @@ end
     end
 end
 
-@kernel function fill_empty_blocks_kernel!(t′::Tiling, scratch::OffsetMatrix)
+@kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)
     (; N) = t′
     i, j = @index(Global, NTuple) .- N
 
@@ -64,8 +64,11 @@ end
         end
     end
     @label foo
+end
 
-    @synchronize
+@kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)
+    (; N) = t′
+    i, j = @index(Global, NTuple) .- N
 
     @inbounds if in_diamond(N, i, j)
         if scratch[i, j] == SHOULD_FILL
@@ -87,7 +90,8 @@ function ka_diamond!(t, t′, N; dev)
     zero! = zero_kernel!(dev)
     remove_bad_blocks! = remove_bad_blocks_kernel!(dev)
     slide_tiles! = slide_tiles_kernel!(dev)
-    fill_empty_blocks! = fill_empty_blocks_kernel!(dev)
+    fill_empty_blocks1! = fill_empty_blocks_kernel1!(dev)
+    fill_empty_blocks2! = fill_empty_blocks_kernel2!(dev)
     ev = Event(dev)
 
     ndrange = (0, 0)
@@ -99,7 +103,8 @@ function ka_diamond!(t, t′, N; dev)
             ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
         end
         ndrange = (2N, 2N)
-        ev = fill_empty_blocks!(t′, t.x; ndrange, dependencies=(ev,))
+        ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
+        ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
         t, t′ = t′, t
     end
     wait(ev)
