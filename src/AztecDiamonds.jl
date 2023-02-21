@@ -1,7 +1,7 @@
 module AztecDiamonds
 
-using OffsetArrays, Transducers, Folds
-using Transducers: @next, complete, Executor
+using OffsetArrays, Transducers
+using Transducers: @next, complete
 
 export Tiling, diamond, ka_diamond, dr_path
 
