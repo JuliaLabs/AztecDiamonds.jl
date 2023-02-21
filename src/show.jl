@@ -20,7 +20,7 @@ end
 function Base.show(io::IO, t::Tiling)
     summary(io, t)
     (; N) = t
-    displaysize(io)[2] ≥ 2N || return print(io, "\n  Output too large to fit terminal. Use \
+    displaysize(io)[2] ≥ 4N || return print(io, "\n  Output too large to fit terminal. Use \
         `using ImageView; imshow(AztecDiamonds.to_img(D))` to display as an image instead.")
     t = adapt(Array, t)
     foreach(Iterators.product(inds(N)...)) do (j, i)
@@ -33,14 +33,14 @@ function Base.show(io::IO, t::Tiling)
             elseif get(t, (i, j-1), NONE) == RIGHT
                 print(io, 'b')
             else
-                printstyled(io, '╻'; color)
+                printstyled(io, "🬦🬓"; color)
             end
         elseif get(t, (i-1, j), NONE) == UP
             color = !isdotted ? :red : :green
             if get(t, (i, j-1), NONE) == RIGHT
                 print(io, 'c')
             else
-                printstyled(io, '╹'; color)
+                printstyled(io, "🬉🬄"; color)
             end
         elseif get(t, (i, j), NONE) == RIGHT
             color = isdotted ? :yellow : :blue
@@ -49,13 +49,13 @@ function Base.show(io::IO, t::Tiling)
             elseif get(t, (i, j-1), NONE) == RIGHT
                 print(io, 'e')
             else
-                printstyled(io, '╺'; color)
+                printstyled(io, "🬇🬋"; color)
             end
         elseif get(t, (i, j-1), NONE) == RIGHT
             color = !isdotted ? :yellow : :blue
-            printstyled(io, '╸'; color)
+            printstyled(io, "🬋🬃"; color)
         else
-            print(io, ' ')
+            print(io, "  ")
         end
     end
 end

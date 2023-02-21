@@ -18,7 +18,7 @@ end
     N = 20
     D = diamond(N)
     r = repr(D)
-    @test length(r) > (2N)^2
+    @test length(r) > 2(2N)^2
     r_color = repr(D; context=:color=>true)
     @test length(r_color) == length(r) + 10length(AztecDiamonds.faces(D))
 end
