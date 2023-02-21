@@ -31,3 +31,8 @@ using AztecDiamonds: DiamondFaces
     @test eltype(df) == eltype(df′)
     @test length(df′[1]) == 3
 end
+
+@testset "KernelAbstractions CPU" begin
+    D = ka_diamond(100, Array)
+    @test verify_tiling(D)
+end
