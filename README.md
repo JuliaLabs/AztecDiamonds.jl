@@ -13,8 +13,48 @@ A package for generating and analyzing [Aztec diamonds](https://en.wikipedia.org
 To generate an order-n Aztec diamond, simply call `diamond(n)`
 
 ```julia
-julia> D = diamond(50)
-[...]
+julia> diamond(20)
+20-order Tiling{Matrix{AztecDiamonds.Edge}}
+                   ╺╸
+                  ╺╸╺╸
+                 ╺╸╺╸╺╸
+                ╺╸╺╸╺╸╺╸
+               ╺╸╺╸╺╸╺╸╺╸
+              ╺╸╺╸╺╸╺╸╺╸╺╸
+             ╺╸╺╸╺╸╺╸╺╸╺╸╺╸
+            ╺╸╻╻╺╸╺╸╺╸╻╺╸╺╸╻
+           ╻╺╸╹╹╻╺╸╻╺╸╹╺╸╺╸╹╻
+          ╻╹╺╸╺╸╹╺╸╹╺╸╺╸╺╸╺╸╹╻
+         ╻╹╺╸╻╻╺╸╻╻╻╺╸╻╺╸╺╸╺╸╹╻
+        ╻╹╻╻╻╹╹╻╻╹╹╹╺╸╹╻╺╸╺╸╺╸╹╻
+       ╻╹╻╹╹╹╺╸╹╹╺╸╻╻╺╸╹╺╸╻╺╸╻╻╹╻
+      ╻╹╻╹╻╻╻╻╻╺╸╻╻╹╹╻╺╸╺╸╹╻╻╹╹╻╹╻
+     ╻╹╻╹╻╹╹╹╹╹╺╸╹╹╻╻╹╻╺╸╺╸╹╹╺╸╹╻╹╻
+    ╻╹╻╹╻╹╻╻╺╸╺╸╺╸╻╹╹╻╹╻╻╺╸╻╺╸╺╸╹╻╹╻
+   ╻╹╻╹╻╹╻╹╹╻╺╸╻╺╸╹╺╸╹╻╹╹╺╸╹╻╻╻╺╸╹╻╹╻
+  ╻╹╻╹╻╹╻╹╺╸╹╺╸╹╺╸╺╸╺╸╹╺╸╻╺╸╹╹╹╻╻╻╹╻╹╻
+ ╻╹╻╹╻╹╻╹╺╸╻╺╸╺╸╺╸╺╸╺╸╺╸╻╹╺╸╻╺╸╹╹╹╻╹╻╹╻
+╻╹╻╹╻╹╻╹╻╻╻╹╺╸╺╸╺╸╻╻╺╸╺╸╹╺╸╻╹╻╻╻╻╻╹╻╹╻╹╻
+╹╻╹╻╹╻╹╻╹╹╹╻╻╺╸╺╸╻╹╹╻╻╺╸╻╺╸╹╻╹╹╹╹╹╻╹╻╹╻╹
+ ╹╻╹╻╹╻╹╺╸╻╹╹╺╸╺╸╹╺╸╹╹╺╸╹╺╸╻╹╺╸╺╸╻╹╻╹╻╹
+  ╹╻╹╻╹╻╻╻╹╻╺╸╺╸╺╸╺╸╺╸╻╺╸╻╻╹╺╸╻╻╻╹╻╹╻╹
+   ╹╻╹╻╹╹╹╻╹╻╻╺╸╺╸╺╸╻╻╹╻╻╹╹╺╸╻╹╹╹╻╹╻╹
+    ╹╻╹╻╺╸╹╻╹╹╺╸╺╸╺╸╹╹╻╹╹╺╸╺╸╹╺╸╻╹╻╹
+     ╹╻╹╻╻╻╹╻╺╸╻╻╻╻╺╸╻╹╺╸╺╸╺╸╺╸╻╹╻╹
+      ╹╻╹╹╹╻╹╻╻╹╹╹╹╺╸╹╺╸╺╸╺╸╻╺╸╹╻╹
+       ╹╻╺╸╹╻╹╹╺╸╺╸╺╸╺╸╻╻╻╻╻╹╻╺╸╹
+        ╹╻╺╸╹╻╻╻╻╺╸╺╸╺╸╹╹╹╹╹╻╹╺╸
+         ╹╻╻╻╹╹╹╹╺╸╺╸╺╸╺╸╻╻╻╹╺╸
+          ╹╹╹╻╺╸╻╺╸╻╻╺╸╺╸╹╹╹╺╸
+           ╺╸╹╻╻╹╺╸╹╹╺╸╺╸╺╸╺╸
+            ╺╸╹╹╺╸╺╸╺╸╺╸╺╸╺╸
+             ╺╸╺╸╺╸╺╸╺╸╺╸╺╸
+              ╺╸╺╸╺╸╺╸╺╸╺╸
+               ╺╸╺╸╺╸╺╸╺╸
+                ╺╸╺╸╺╸╺╸
+                 ╺╸╺╸╺╸
+                  ╺╸╺╸
+                   ╺╸
 ```
 
 It is recommended that you use an interactive enviroment like Pluto, VS Code or IJulia to be able to view the generated diamonds in all their glory. Alternatively, you can also view them in a separate window using the [ImageView](https://github.com/JuliaImages/ImageView.jl) package as follows:
@@ -32,7 +72,7 @@ You can extract the DR-path separating the northern arctic region from the rest 
 
 ```julia
 julia> dr_path(D)
-101-element OffsetArray(::Vector{Float64}, -50:50) with eltype Float64 with indices -50:50:
+41-element OffsetArray(::Vector{Float64}, -20:20) with eltype Float64 with indices -20:20:
  -0.5
   0.5
   1.5
