@@ -26,7 +26,14 @@ julia> imshow(AztecDiamonds.to_img(D))
 [...]
 ```
 
-If you have an NVIDIA GPU in your system, you can take advantage of GPU acceleration by using the function `cuda_diamond` instead.
+It is possible to take advantage of GPU acceleration via [KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl) on supported backends, e.g. CUDA:
+
+```julia
+julia> using CUDA, CUDAKernels
+
+julia> ka_diamond(200, CuArray)
+[...]
+```
 
 You can extract the DR-path separating the northern arctic region from the rest of the diamond using the `dr_path` function.
 

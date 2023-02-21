@@ -24,7 +24,7 @@ function verify_tiling(t::Tiling)
     return true
 end
 
-import CUDA
+using CUDA
 
 if !(haskey(ENV, "BUILDKITE") && CUDA.functional()) # skip non-gpu tests on Buildkite CI
     include("core.jl")

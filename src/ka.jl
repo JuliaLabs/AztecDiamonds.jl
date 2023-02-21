@@ -5,7 +5,8 @@ Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 # destruction
 @kernel function remove_bad_blocks_kernel!(t::Tiling)
     (; N) = t
-    i, j = @index(Global, NTuple) .- N
+    I = @index(Global, NTuple)
+    i, j = I .- N
 
     @inbounds if in_diamond(N, i, j) && isblock(t, i, j, Val(false))
         if t[i, j] == UP
@@ -20,7 +21,8 @@ end
 # sliding
 @kernel function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))
     (; N) = t
-    i, j = @index(Global, NTuple) .- N
+    I = @index(Global, NTuple)
+    i, j = I .- N
 
     @inbounds if in_diamond(N, i, j)
         tile = @inbounds t[i, j]
@@ -37,7 +39,8 @@ end
 # filling
 @kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)
     (; N) = t′
-    i, j = @index(Global, NTuple) .- N
+    I = @index(Global, NTuple)
+    i, j = I .- N
 
     @inbounds if in_diamond(N, i, j) && is_empty_tile(t′, i, j)
         should_fill = true
@@ -61,7 +64,8 @@ end
 
 @kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)
     (; N) = t′
-    i, j = @index(Global, NTuple) .- N
+    I = @index(Global, NTuple)
+    i, j = I .- N
 
     @inbounds if in_diamond(N, i, j)
         if scratch[i, j] == SHOULD_FILL
@@ -75,7 +79,8 @@ end
 end
 
 @kernel function zero_kernel!(t::Tiling, N)
-    i, j = @index(Global, NTuple) .- N
+    I = @index(Global, NTuple)
+    i, j = I .- N
     @inbounds t.x[i, j] = NONE
 end
 
@@ -109,8 +114,8 @@ function ka_diamond!(t, t′, N; dev)
     return t
 end
 
-function ka_diamond(N, Backend)
-    mem = ntuple(_ -> Backend.fill(NONE, 2N, 2N), 2)
+function ka_diamond(N, ArrayT)
+    mem = ntuple(_ -> fill!(ArrayT{Edge}(undef, 2N, 2N), NONE), 2)
     t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
     return ka_diamond!(t, t′, N; dev=KernelAbstractions.get_device(mem[1]))
 end

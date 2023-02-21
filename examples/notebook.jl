@@ -27,10 +27,10 @@ let
 end
 
 # ╔═╡ ab0968e2-43c7-4610-87ba-47433c003081
-import CUDA, CUDAKernels
+using CUDA, CUDAKernels
 
 # ╔═╡ 8bb0983b-103e-4cf8-9a9f-95feb90df054
-ka_diamond(2000, CUDA)
+ka_diamond(2000, CuArray)
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
