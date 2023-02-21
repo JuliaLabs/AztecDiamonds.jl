@@ -3,7 +3,7 @@ module AztecDiamonds
 using OffsetArrays, Transducers, Folds
 using Transducers: @next, complete, Executor
 
-export Tiling, diamond, cuda_diamond, dr_path
+export Tiling, diamond, ka_diamond, dr_path
 
 @enum Edge::UInt8 NONE UP RIGHT SHOULD_FILL
 
@@ -82,42 +82,9 @@ function Transducers.asfoldable((; t)::BlockIterator{good}) where {good}
 end
 
 
-_foreach(f, itr, ::SequentialEx) = foreach(f, itr)
-function _foreach(f, itr, ex)
-    if itr isa DiamondFaces
-        let (; N) = itr
-            N == 0 && return
-            Folds.foreach(CartesianIndices(inds(N)), ex) do I
-                ## COV_EXCL_START
-                i, j = Tuple(I)
-                abs(2i-1) + abs(2j-1) ≤ 2N && f((i, j, isodd(i+j-N)))
-                ## COV_EXCL_STOP
-            end
-        end
-    elseif itr isa BlockIterator
-        let (; t) = itr
-        (; N) = t
-        good = itr isa BlockIterator{true}
-        _foreach(faces(t), ex) do (i, j, isdotted)
-            ## COV_EXCL_START
-            tile = @inbounds t[i, j]
-            @inbounds if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
-                good == isdotted && f((i, j, isdotted))
-            elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
-                good == isdotted && f((i, j, isdotted))
-            end
-            ## COV_EXCL_STOP
-        end
-        end
-    else
-        Folds.foreach(f, itr, ex)
-    end
-end
-
-
 # destruction
-function remove_bad_blocks!(t::Tiling; ex=SequentialEx())
-    _foreach(BlockIterator{false}(t), ex) do (i, j)
+function remove_bad_blocks!(t::Tiling)
+    foreach(BlockIterator{false}(t)) do (i, j)
         @inbounds if t[i, j] == UP
             t[i, j+1] = NONE
         else
@@ -129,8 +96,8 @@ function remove_bad_blocks!(t::Tiling; ex=SequentialEx())
 end
 
 # sliding
-function slide_tiles!(t′::Tiling, t::Tiling; ex=SequentialEx())
-    _foreach(faces(t), ex) do (i, j, isdotted)
+function slide_tiles!(t′::Tiling, t::Tiling)
+    foreach(faces(t)) do (i, j, isdotted)
         tile = @inbounds t[i, j]
         inc = isdotted ? -1 : 1
         @inbounds if tile == UP
@@ -142,10 +109,14 @@ function slide_tiles!(t′::Tiling, t::Tiling; ex=SequentialEx())
     return t′
 end
 
+Base.@propagate_inbounds function is_empty_tile(t′::Tiling, i, j)
+    return t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
+end
+
 # filling
-function fill_empty_blocks!(t′::Tiling, ex=SequentialEx(); scratch=nothing)
-    _foreach(faces(t′), ex) do (i, j)
-        @inbounds if t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
+function fill_empty_blocks!(t′::Tiling)
+    foreach(faces(t′)) do (i, j)
+        @inbounds if is_empty_tile(t′, i, j)
             if rand(Bool)
                 t′[i, j] = t′[i, j+1] = UP
             else
@@ -156,20 +127,20 @@ function fill_empty_blocks!(t′::Tiling, ex=SequentialEx(); scratch=nothing)
     return t′
 end
 
-function step!(t′::Tiling, t::Tiling; ex=SequentialEx())
+function step!(t′::Tiling, t::Tiling)
     t′.N == t.N + 1 || throw(ArgumentError("t′.N ≠ t.N + 1"))
-    remove_bad_blocks!(t; ex)
-    slide_tiles!(t′, t; ex)
-    fill_empty_blocks!(t′, ex; scratch=t.x)
+    remove_bad_blocks!(t)
+    slide_tiles!(t′, t)
+    fill_empty_blocks!(t′)
     return t′
 end
 
-function diamond!(t, t′, N; ex=SequentialEx())
+function diamond!(t, t′, N)
     for N in 1:N
         (; x) = t′
         view(x, inds(N-1)...) .= NONE
         t′ = Tiling(N, x)
-        t, t′ = step!(t′, t; ex), t
+        t, t′ = step!(t′, t), t
     end
     return t
 end
@@ -177,69 +148,6 @@ end
 function diamond(N)
     t, t′ = Tiling(0; sizehint=N), Tiling(0; sizehint=N)
     return diamond!(t, t′, N)
-end
-
-using FoldsCUDA, Adapt, Referenceables
-using CUDA: CUDA, CuArray
-
-# filling CUDA
-function fill_empty_blocks!(t′::Tiling, ex::CUDAEx; scratch::OffsetMatrix)
-    _foreach(faces(t′), ex) do (i, j)
-        ## COV_EXCL_START
-        @inbounds if t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
-            should_fill = true
-            i′ = i - 1
-            while checkbounds(Bool, t′, i′, j)
-                if t′[i′, j] == NONE && get(t′, (i′-1, j), NONE) != UP && get(t′, (i′, j-1), NONE) != RIGHT
-                    should_fill ⊻= true
-                    i′ -= 1
-                else
-                    break
-                end
-            end
-            should_fill || return
-            j′ = j - 1
-            while checkbounds(Bool, t′, i, j′)
-                if t′[i, j′] == NONE && get(t′, (i-1, j′), NONE) != UP && get(t′, (i, j′-1), NONE) != RIGHT
-                    should_fill ⊻= true
-                    j′ -= 1
-                else
-                    break
-                end
-            end
-            if should_fill
-                scratch[i, j] = SHOULD_FILL
-            end
-        end
-        ## COV_EXCL_STOP
-    end
-    _foreach(faces(t′), ex) do (i, j)
-        ## COV_EXCL_START
-        @inbounds if scratch[i, j] == SHOULD_FILL
-            if rand(Bool)
-                t′[i, j] = t′[i, j+1] = UP
-            else
-                t′[i, j] = t′[i+1, j] = RIGHT
-            end
-        end
-        ## COV_EXCL_STOP
-    end
-    return t′
-end
-
-Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
-function Base.fill!(a::SubArray{T, N, OffsetArray{T, N, CuArray{T, N, CUDA.Mem.DeviceBuffer}}}, x) where {T, N}
-    length(a) != 0 && Folds.foreach(referenceable(a), CUDAEx()) do a
-        ## COV_EXCL_START
-        a[] = x
-        ## COV_EXCL_STOP
-    end
-    return a
-end
-
-function cuda_diamond(N)
-    t, t′ = ntuple(_ -> Tiling(0, OffsetMatrix(CUDA.fill(NONE, 2N, 2N), inds(N))), 2)
-    return diamond!(t, t′, N; ex=CUDAEx())
 end
 
 include("ka.jl")

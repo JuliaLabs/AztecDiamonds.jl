@@ -1,4 +1,6 @@
-using KernelAbstractions
+using KernelAbstractions, Adapt
+
+Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 
 # destruction
 @kernel function remove_bad_blocks_kernel!(t::Tiling)
@@ -32,38 +34,29 @@ end
     end
 end
 
+# filling
 @kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)
     (; N) = t′
     i, j = @index(Global, NTuple) .- N
 
-    @inbounds if in_diamond(N, i, j)
-        if t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
-            should_fill = true
-            i′ = i - 1
-            while checkbounds(Bool, t′, i′, j)
-                if t′[i′, j] == NONE && get(t′, (i′-1, j), NONE) != UP && get(t′, (i′, j-1), NONE) != RIGHT
-                    should_fill ⊻= true
-                    i′ -= 1
-                else
-                    break
-                end
-            end
-            should_fill || @goto foo
-            j′ = j - 1
-            while checkbounds(Bool, t′, i, j′)
-                if t′[i, j′] == NONE && get(t′, (i-1, j′), NONE) != UP && get(t′, (i, j′-1), NONE) != RIGHT
-                    should_fill ⊻= true
-                    j′ -= 1
-                else
-                    break
-                end
-            end
-            if should_fill
-                scratch[i, j] = SHOULD_FILL
-            end
+    @inbounds if in_diamond(N, i, j) && is_empty_tile(t′, i, j)
+        should_fill = true
+        i′ = i - 1
+        while in_diamond(N, i′, j) && is_empty_tile(t′, i′, j)
+            should_fill ⊻= true
+            i′ -= 1
+        end
+        should_fill || @goto ret
+        j′ = j - 1
+        while in_diamond(N, i, j′) && is_empty_tile(t′, i, j′)
+            should_fill ⊻= true
+            j′ -= 1
+        end
+        if should_fill
+            scratch[i, j] = SHOULD_FILL
         end
     end
-    @label foo
+    @label ret
 end
 
 @kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)
@@ -94,14 +87,19 @@ function ka_diamond!(t, t′, N; dev)
     fill_empty_blocks2! = fill_empty_blocks_kernel2!(dev)
     ev = Event(dev)
 
-    ndrange = (0, 0)
-    for N in 1:N
-        N > 1 && (ev = zero!(t′, N-1; ndrange, dependencies=(ev,)))
+    t′ = Tiling(N, t′.x)
+    ndrange = (1, 1)
+    ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
+    ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
+    t, t′ = t′, t
+
+    for N in 2:N
+        ev = zero!(t′, N-1; ndrange, dependencies=(ev,))
         t′ = Tiling(N, t′.x)
-        if N > 1
-            ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
-            ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
-        end
+
+        ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
+        ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
+
         ndrange = (2N, 2N)
         ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
         ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
