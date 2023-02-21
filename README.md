@@ -72,7 +72,7 @@ You can extract the DR-path separating the northern arctic region from the rest 
 
 ```julia
 julia> dr_path(D)
-101-element OffsetArray(::Vector{Float64}, -50:50) with eltype Float64 with indices -50:50:
+41-element OffsetArray(::Vector{Float64}, -20:20) with eltype Float64 with indices -20:20:
  -0.5
   0.5
   1.5
