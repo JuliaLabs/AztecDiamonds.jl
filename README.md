@@ -13,8 +13,48 @@ A package for generating and analyzing [Aztec diamonds](https://en.wikipedia.org
 To generate an order-n Aztec diamond, simply call `diamond(n)`
 
 ```julia
-julia> D = diamond(50)
-[...]
+julia> diamond(20)
+20-order Tiling{Matrix{AztecDiamonds.Edge}}
+                   ╺╸
+                  ╺╸╺╸
+                 ╺╸╺╸╺╸
+                ╺╸╺╸╺╸╺╸
+               ╺╸╺╸╺╸╺╸╺╸
+              ╺╸╺╸╺╸╺╸╺╸╺╸
+             ╺╸╺╸╺╸╺╸╺╸╺╸╺╸
+            ╺╸╻╻╺╸╺╸╺╸╻╺╸╺╸╻
+           ╻╺╸╹╹╻╺╸╻╺╸╹╺╸╺╸╹╻
+          ╻╹╺╸╺╸╹╺╸╹╺╸╺╸╺╸╺╸╹╻
+         ╻╹╺╸╻╻╺╸╻╻╻╺╸╻╺╸╺╸╺╸╹╻
+        ╻╹╻╻╻╹╹╻╻╹╹╹╺╸╹╻╺╸╺╸╺╸╹╻
+       ╻╹╻╹╹╹╺╸╹╹╺╸╻╻╺╸╹╺╸╻╺╸╻╻╹╻
+      ╻╹╻╹╻╻╻╻╻╺╸╻╻╹╹╻╺╸╺╸╹╻╻╹╹╻╹╻
+     ╻╹╻╹╻╹╹╹╹╹╺╸╹╹╻╻╹╻╺╸╺╸╹╹╺╸╹╻╹╻
+    ╻╹╻╹╻╹╻╻╺╸╺╸╺╸╻╹╹╻╹╻╻╺╸╻╺╸╺╸╹╻╹╻
+   ╻╹╻╹╻╹╻╹╹╻╺╸╻╺╸╹╺╸╹╻╹╹╺╸╹╻╻╻╺╸╹╻╹╻
+  ╻╹╻╹╻╹╻╹╺╸╹╺╸╹╺╸╺╸╺╸╹╺╸╻╺╸╹╹╹╻╻╻╹╻╹╻
+ ╻╹╻╹╻╹╻╹╺╸╻╺╸╺╸╺╸╺╸╺╸╺╸╻╹╺╸╻╺╸╹╹╹╻╹╻╹╻
+╻╹╻╹╻╹╻╹╻╻╻╹╺╸╺╸╺╸╻╻╺╸╺╸╹╺╸╻╹╻╻╻╻╻╹╻╹╻╹╻
+╹╻╹╻╹╻╹╻╹╹╹╻╻╺╸╺╸╻╹╹╻╻╺╸╻╺╸╹╻╹╹╹╹╹╻╹╻╹╻╹
+ ╹╻╹╻╹╻╹╺╸╻╹╹╺╸╺╸╹╺╸╹╹╺╸╹╺╸╻╹╺╸╺╸╻╹╻╹╻╹
+  ╹╻╹╻╹╻╻╻╹╻╺╸╺╸╺╸╺╸╺╸╻╺╸╻╻╹╺╸╻╻╻╹╻╹╻╹
+   ╹╻╹╻╹╹╹╻╹╻╻╺╸╺╸╺╸╻╻╹╻╻╹╹╺╸╻╹╹╹╻╹╻╹
+    ╹╻╹╻╺╸╹╻╹╹╺╸╺╸╺╸╹╹╻╹╹╺╸╺╸╹╺╸╻╹╻╹
+     ╹╻╹╻╻╻╹╻╺╸╻╻╻╻╺╸╻╹╺╸╺╸╺╸╺╸╻╹╻╹
+      ╹╻╹╹╹╻╹╻╻╹╹╹╹╺╸╹╺╸╺╸╺╸╻╺╸╹╻╹
+       ╹╻╺╸╹╻╹╹╺╸╺╸╺╸╺╸╻╻╻╻╻╹╻╺╸╹
+        ╹╻╺╸╹╻╻╻╻╺╸╺╸╺╸╹╹╹╹╹╻╹╺╸
+         ╹╻╻╻╹╹╹╹╺╸╺╸╺╸╺╸╻╻╻╹╺╸
+          ╹╹╹╻╺╸╻╺╸╻╻╺╸╺╸╹╹╹╺╸
+           ╺╸╹╻╻╹╺╸╹╹╺╸╺╸╺╸╺╸
+            ╺╸╹╹╺╸╺╸╺╸╺╸╺╸╺╸
+             ╺╸╺╸╺╸╺╸╺╸╺╸╺╸
+              ╺╸╺╸╺╸╺╸╺╸╺╸
+               ╺╸╺╸╺╸╺╸╺╸
+                ╺╸╺╸╺╸╺╸
+                 ╺╸╺╸╺╸
+                  ╺╸╺╸
+                   ╺╸
 ```
 
 It is recommended that you use an interactive enviroment like Pluto, VS Code or IJulia to be able to view the generated diamonds in all their glory. Alternatively, you can also view them in a separate window using the [ImageView](https://github.com/JuliaImages/ImageView.jl) package as follows:
