@@ -88,7 +88,7 @@ function ka_diamond!(t, t′, N; dev)
     ev = Event(dev)
 
     t′ = Tiling(1, t′.x)
-    ndrange = (1, 1)
+    ndrange = (2, 2)
     ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
     ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
     t, t′ = t′, t
