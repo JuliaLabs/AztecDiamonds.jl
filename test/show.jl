@@ -12,6 +12,13 @@ using Images
     @test !Base.showable("image/png", Tiling(0))
 end
 
-@testset "summary" begin
+@testset "pretty printing" begin
     @test summary(Tiling(2)) == "2-order Tiling{Matrix{AztecDiamonds.Edge}}"
+
+    N = 20
+    D = diamond(N)
+    r = repr(D)
+    @test length(r) > (2N)^2
+    r_color = repr(D; context=:color=>true)
+    @test length(r_color) == length(r) + 10length(AztecDiamonds.faces(D))
 end
