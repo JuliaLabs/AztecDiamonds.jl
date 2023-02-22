@@ -1,7 +1,7 @@
-using CairoMakie
-using CairoMakie: Axis
+@testitem "Makie" begin
+    using CairoMakie
+    using CairoMakie: Axis
 
-@testset "Makie" begin
     D = diamond(100)
 
     f = Figure()
