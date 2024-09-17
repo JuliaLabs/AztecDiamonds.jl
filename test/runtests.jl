@@ -1,5 +1,3 @@
-# TODO: remove once TestItemRunner v0.2.2 is released
-import Pkg; Pkg.add(Pkg.PackageSpec(; name="TestItemRunner", rev="main"))
 using TestItemRunner, CUDA
 
 iscuda((; tags)) = :cuda in tags
