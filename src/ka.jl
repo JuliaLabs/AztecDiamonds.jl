@@ -117,5 +117,5 @@ end
 function ka_diamond(N, ArrayT)
     mem = ntuple(_ -> fill!(ArrayT{Edge}(undef, 2N, 2N), NONE), 2)
     t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
-    return ka_diamond!(t, t′, N; dev=KernelAbstractions.get_device(mem[1]))
+    return ka_diamond!(t, t′, N; dev=KernelAbstractions.get_backend(mem[1]))
 end
