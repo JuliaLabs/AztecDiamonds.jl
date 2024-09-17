@@ -49,7 +49,7 @@ julia> imshow(AztecDiamonds.to_img(D))
 It is possible to take advantage of GPU acceleration via [KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl) on supported backends, e.g. CUDA:
 
 ```julia
-julia> using CUDA, CUDAKernels
+julia> using CUDA
 
 julia> ka_diamond(200, CuArray)
 [...]

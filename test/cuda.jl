@@ -1,4 +1,4 @@
-using Adapt, CUDAKernels
+using Adapt, CUDA
 
 @testset "CUDA" begin
     D = ka_diamond(200, CuArray)
