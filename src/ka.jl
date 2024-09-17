@@ -90,24 +90,23 @@ function ka_diamond!(t, t′, N; dev)
     slide_tiles! = slide_tiles_kernel!(dev)
     fill_empty_blocks1! = fill_empty_blocks_kernel1!(dev)
     fill_empty_blocks2! = fill_empty_blocks_kernel2!(dev)
-    ev = Event(dev)
 
     t′ = Tiling(1, t′.x)
     ndrange = (2, 2)
-    ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
-    ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
+    ev = fill_empty_blocks1!(t′, t.x; ndrange)
+    ev = fill_empty_blocks2!(t′, t.x; ndrange)
     t, t′ = t′, t
 
     for N in 2:N
-        ev = zero!(t′, N-1; ndrange, dependencies=(ev,))
+        ev = zero!(t′, N-1; ndrange)
         t′ = Tiling(N, t′.x)
 
-        ev = remove_bad_blocks!(t; ndrange, dependencies=(ev,))
-        ev = slide_tiles!(t′, t; ndrange, dependencies=(ev,))
+        ev = remove_bad_blocks!(t; ndrange)
+        ev = slide_tiles!(t′, t; ndrange)
 
         ndrange = (2N, 2N)
-        ev = fill_empty_blocks1!(t′, t.x; ndrange, dependencies=(ev,))
-        ev = fill_empty_blocks2!(t′, t.x; ndrange, dependencies=(ev,))
+        ev = fill_empty_blocks1!(t′, t.x; ndrange)
+        ev = fill_empty_blocks2!(t′, t.x; ndrange)
         t, t′ = t′, t
     end
     wait(ev)
