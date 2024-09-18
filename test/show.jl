@@ -1,6 +1,6 @@
-using Images
+@testitem "image show" begin
+    using Images
 
-@testset "image show" begin
     D = diamond(100)
     @test Base.showable("image/png", D)
     @test repr("image/png", D) isa Vector{UInt8}
@@ -12,8 +12,8 @@ using Images
     @test !Base.showable("image/png", Tiling(0))
 end
 
-@testset "pretty printing" begin
-    @test summary(Tiling(2)) == "2-order Tiling{Matrix{AztecDiamonds.Edge}}"
+@testitem "pretty printing" begin
+    @test summary(Tiling(2)) == "2-order $Tiling{Matrix{AztecDiamonds.Edge}}"
 
     N = 20
     D = diamond(N)

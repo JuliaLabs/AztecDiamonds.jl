@@ -1,4 +1,6 @@
-@testset "core" begin
+@testitem "core" begin
+    include("verify_tiling.jl")
+
     D = diamond(100)
     @test verify_tiling(D)
 
@@ -6,7 +8,9 @@
     @test dr[end] == -0.5
 end
 
-@testset "Tiling" begin
+@testitem "Tiling" begin
+    using AztecDiamonds: NONE
+
     D = diamond(100)
     D′ = copy(D)
 
@@ -21,9 +25,10 @@ end
     @test_throws BoundsError D[51, 51] = NONE
 end
 
-using AztecDiamonds: DiamondFaces
 
-@testset "DiamondFaces" begin
+@testitem "DiamondFaces" begin
+    using AztecDiamonds: DiamondFaces
+
     df = DiamondFaces(10)
     df′ = foldl(vcat, df; init=Union{}[])
 
@@ -32,7 +37,9 @@ using AztecDiamonds: DiamondFaces
     @test length(df′[1]) == 3
 end
 
-@testset "KernelAbstractions CPU" begin
+@testitem "KernelAbstractions CPU" begin
+    include("verify_tiling.jl")
+
     D = ka_diamond(100, Array)
     @test verify_tiling(D)
 end

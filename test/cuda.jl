@@ -1,6 +1,7 @@
-using Adapt, CUDA
+@testitem "CUDA" tags=[:cuda] begin
+    include("verify_tiling.jl")
+    using CUDA, Adapt
 
-@testset "CUDA" begin
     D = ka_diamond(200, CuArray)
     D_cpu = adapt(Array, D)
     @test verify_tiling(D_cpu)
