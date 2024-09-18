@@ -1,5 +1,5 @@
 @testitem "core" begin
-    include("setup.jl")
+    include("verify_tiling.jl")
 
     D = diamond(100)
     @test verify_tiling(D)
@@ -38,7 +38,7 @@ end
 end
 
 @testitem "KernelAbstractions CPU" begin
-    include("setup.jl")
+    include("verify_tiling.jl")
 
     D = ka_diamond(100, Array)
     @test verify_tiling(D)

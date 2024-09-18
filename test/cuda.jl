@@ -1,5 +1,5 @@
 @testitem "CUDA" tags=[:cuda] begin
-    include("setup.jl")
+    include("verify_tiling.jl")
     using CUDA, Adapt
 
     D = ka_diamond(200, CuArray)
