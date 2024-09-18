@@ -93,23 +93,22 @@ function ka_diamond!(t, t′, N; dev)
 
     t′ = Tiling(1, t′.x)
     ndrange = (2, 2)
-    ev = fill_empty_blocks1!(t′, t.x; ndrange)
-    ev = fill_empty_blocks2!(t′, t.x; ndrange)
+    fill_empty_blocks1!(t′, t.x; ndrange)
+    fill_empty_blocks2!(t′, t.x; ndrange)
     t, t′ = t′, t
 
     for N in 2:N
-        ev = zero!(t′, N-1; ndrange)
+        zero!(t′, N-1; ndrange)
         t′ = Tiling(N, t′.x)
 
-        ev = remove_bad_blocks!(t; ndrange)
-        ev = slide_tiles!(t′, t; ndrange)
+        remove_bad_blocks!(t; ndrange)
+        slide_tiles!(t′, t; ndrange)
 
         ndrange = (2N, 2N)
-        ev = fill_empty_blocks1!(t′, t.x; ndrange)
-        ev = fill_empty_blocks2!(t′, t.x; ndrange)
+        fill_empty_blocks1!(t′, t.x; ndrange)
+        fill_empty_blocks2!(t′, t.x; ndrange)
         t, t′ = t′, t
     end
-    wait(ev)
     return t
 end
 
