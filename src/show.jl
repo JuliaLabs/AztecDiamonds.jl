@@ -17,7 +17,16 @@ function to_img(t::Tiling)
     img
 end
 
-function Base.show(io::IO, t::Tiling)
+function Base.show(io::IO, (; N, x)::Tiling)
+    print(io, "Tiling(", N)
+    if N > 0
+        print(io, ", ")
+        Base._show_nonempty(IOContext(io, :compact=>true), parent(x), "")
+    end
+    print(io, ")")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
     summary(io, t)
     (; N) = t
     displaysize(io)[2] ≥ 4N || return print(io, "\n  Output too large to fit terminal. Use \
@@ -29,25 +38,25 @@ function Base.show(io::IO, t::Tiling)
         if get(t, (i, j), NONE) == UP
             color = isdotted ? :red : :green
             if get(t, (i-1, j), NONE) == UP
-                print(io, 'a')
+                print(io, "UU")
             elseif get(t, (i, j-1), NONE) == RIGHT
-                print(io, 'b')
+                print(io, "UR")
             else
                 printstyled(io, "🬦🬓"; color)
             end
         elseif get(t, (i-1, j), NONE) == UP
             color = !isdotted ? :red : :green
             if get(t, (i, j-1), NONE) == RIGHT
-                print(io, 'c')
+                print(io, "NR")
+            elseif get(t, (i, j), NONE) == RIGHT
+                print(io, "RU")
             else
                 printstyled(io, "🬉🬄"; color)
             end
         elseif get(t, (i, j), NONE) == RIGHT
             color = isdotted ? :yellow : :blue
-            if get(t, (i-1, j), NONE) == UP
-                print(io, 'd')
-            elseif get(t, (i, j-1), NONE) == RIGHT
-                print(io, 'e')
+            if get(t, (i, j-1), NONE) == RIGHT
+                print(io, "RR")
             else
                 printstyled(io, "🬇🬋"; color)
             end
