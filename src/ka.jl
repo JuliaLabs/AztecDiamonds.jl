@@ -11,9 +11,9 @@ KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x
 
     @inbounds if in_diamond(N, i, j) && isblock(t, i, j, Val(false))
         if t[i, j] == UP
-            t[i, j+1] = NONE
+            t[i, j + 1] = NONE
         else
-            t[i+1, j] = NONE
+            t[i + 1, j] = NONE
         end
         t[i, j] = NONE
     end
@@ -27,12 +27,12 @@ end
 
     @inbounds if in_diamond(N, i, j)
         tile = @inbounds t[i, j]
-        isdotted = isodd(i+j-N)
+        isdotted = isodd(i + j - N)
         inc = ifelse(isdotted, -1, 1)
         @inbounds if tile == UP
-            t′[i, j+inc] = UP
+            t′[i, j + inc] = UP
         elseif tile == RIGHT
-            t′[i+inc, j] = RIGHT
+            t′[i + inc, j] = RIGHT
         end
     end
 end
@@ -71,9 +71,9 @@ end
     @inbounds if in_diamond(N, i, j)
         if scratch[i, j] == SHOULD_FILL
             if rand(Bool)
-                t′[i, j] = t′[i, j+1] = UP
+                t′[i, j] = t′[i, j + 1] = UP
             else
-                t′[i, j] = t′[i+1, j] = RIGHT
+                t′[i, j] = t′[i + 1, j] = RIGHT
             end
         end
     end
@@ -99,7 +99,7 @@ function ka_diamond!(t, t′, N; backend)
     t, t′ = t′, t
 
     for N in 2:N
-        zero!(t′, N-1; ndrange)
+        zero!(t′, N - 1; ndrange)
         t′ = Tiling(N, t′.x)
 
         remove_bad_blocks!(t; ndrange)
@@ -116,7 +116,7 @@ end
 function ka_diamond(N, ArrayT)
     mem = ntuple(_ -> fill!(ArrayT{Edge}(undef, 2N, 2N), NONE), 2)
     t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
-    return ka_diamond!(t, t′, N; backend=KernelAbstractions.get_backend(mem[1]))
+    return ka_diamond!(t, t′, N; backend = KernelAbstractions.get_backend(mem[1]))
 end
 
 # rotation of tilings
@@ -129,10 +129,10 @@ end
     edge = NONE
     if @inbounds t.x[i, j] == RIGHT
         edge = UP
-    elseif get(t, (i-1, j), NONE) == UP
+    elseif get(t, (i - 1, j), NONE) == UP
         edge = RIGHT
     end
-    @inbounds t′.x[j, 1-i] = edge
+    @inbounds t′.x[j, 1 - i] = edge
 end
 
 @kernel function rotl90_kernel!(t′::Tiling, @Const(t::Tiling))
@@ -143,10 +143,10 @@ end
     edge = NONE
     if @inbounds t.x[i, j] == UP
         edge = RIGHT
-    elseif get(t, (i, j-1), NONE) == RIGHT
+    elseif get(t, (i, j - 1), NONE) == RIGHT
         edge = UP
     end
-    @inbounds t′.x[1-j, i] = edge
+    @inbounds t′.x[1 - j, i] = edge
 end
 
 @kernel function rot180_kernel!(t′::Tiling, @Const(t::Tiling))
@@ -155,12 +155,12 @@ end
     i, j = I .- N
 
     edge = NONE
-    if get(t, (i-1, j), NONE) == UP
+    if get(t, (i - 1, j), NONE) == UP
         edge = UP
-    elseif get(t, (i, j-1), NONE) == RIGHT
+    elseif get(t, (i, j - 1), NONE) == RIGHT
         edge = RIGHT
     end
-    @inbounds t′.x[1-i, 1-j] = edge
+    @inbounds t′.x[1 - i, 1 - j] = edge
 end
 
 for rot in Symbol.(:rot, ["r90", "l90", "180"])
@@ -168,7 +168,7 @@ for rot in Symbol.(:rot, ["r90", "l90", "180"])
         (; N, x) = t
         t′ = Tiling(N, similar(x))
         backend = KernelAbstractions.get_backend(t)
-        $(Symbol(rot, :_kernel!))(backend)(t′, t; ndrange=(2N, 2N))
+        $(Symbol(rot, :_kernel!))(backend)(t′, t; ndrange = (2N, 2N))
         return t′
     end
 end

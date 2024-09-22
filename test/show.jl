@@ -20,7 +20,7 @@ end
     D = diamond(N)
     r = repr(MIME("text/plain"), D)
     @test length(r) > 2(2N)^2
-    r_color = repr(MIME("text/plain"), D; context=:color=>true)
+    r_color = repr(MIME("text/plain"), D; context = :color => true)
     @test length(r_color) == length(r) + 10length(AztecDiamonds.faces(D))
 end
 
