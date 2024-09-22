@@ -4,9 +4,9 @@ Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x)
 
 # destruction
-@kernel function remove_bad_blocks_kernel!(t::Tiling)
+@kernel function remove_bad_blocks_kernel!(t::Tiling)  # COV_EXCL_LINE
     (; N) = t
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     @inbounds if in_diamond(N, i, j) && isblock(t, i, j, Val(false))
@@ -20,9 +20,9 @@ KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x
 end
 
 # sliding
-@kernel function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))
+@kernel function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
     (; N) = t
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     @inbounds if in_diamond(N, i, j)
@@ -38,9 +38,9 @@ end
 end
 
 # filling
-@kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)
+@kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)  # COV_EXCL_LINE
     (; N) = t′
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     @inbounds if in_diamond(N, i, j) && is_empty_tile(t′, i, j)
@@ -50,22 +50,22 @@ end
             should_fill ⊻= true
             i′ -= 1
         end
-        should_fill || @goto ret
-        j′ = j - 1
-        while in_diamond(N, i, j′) && is_empty_tile(t′, i, j′)
-            should_fill ⊻= true
-            j′ -= 1
-        end
         if should_fill
-            scratch[i, j] = SHOULD_FILL
+            j′ = j - 1
+            while in_diamond(N, i, j′) && is_empty_tile(t′, i, j′)
+                should_fill ⊻= true
+                j′ -= 1
+            end
+            if should_fill
+                scratch[i, j] = SHOULD_FILL
+            end
         end
     end
-    @label ret
 end
 
-@kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)
+@kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)  # COV_EXCL_LINE
     (; N) = t′
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     @inbounds if in_diamond(N, i, j)
@@ -79,8 +79,8 @@ end
     end
 end
 
-@kernel function zero_kernel!(t::Tiling, N)
-    I = @index(Global, NTuple)
+@kernel function zero_kernel!(t::Tiling, N)  # COV_EXCL_LINE
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
     @inbounds t.x[i, j] = NONE
 end
@@ -121,9 +121,9 @@ end
 
 # rotation of tilings
 
-@kernel function rotr90_kernel!(t′::Tiling, @Const(t::Tiling))
+@kernel function rotr90_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
     (; N) = t
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     edge = NONE
@@ -135,9 +135,9 @@ end
     @inbounds t′.x[j, 1 - i] = edge
 end
 
-@kernel function rotl90_kernel!(t′::Tiling, @Const(t::Tiling))
+@kernel function rotl90_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
     (; N) = t
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     edge = NONE
@@ -149,9 +149,9 @@ end
     @inbounds t′.x[1 - j, i] = edge
 end
 
-@kernel function rot180_kernel!(t′::Tiling, @Const(t::Tiling))
+@kernel function rot180_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
     (; N) = t
-    I = @index(Global, NTuple)
+    I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
     edge = NONE
