@@ -153,6 +153,10 @@ end
 include("ka.jl")
 include("show.jl")
 include("dr_path.jl")
-include("makie.jl")
+
+# stubs for plotting functions
+
+function tilingplot end
+function tilingplot! end
 
 end
