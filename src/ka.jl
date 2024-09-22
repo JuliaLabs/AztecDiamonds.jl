@@ -3,6 +3,20 @@ using KernelAbstractions, Adapt
 Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x)
 
+# hacks to get more accurate coverage info
+macro index(args...)
+    return quote
+        $__module__
+        $(esc(:(KernelAbstractions.@index($(args...)))))
+    end
+end
+macro kernel(args...)
+    return quote
+        $__module__
+        $(esc(:(KernelAbstractions.@kernel($(args...)))))
+    end
+end
+
 # destruction
 @kernel function remove_bad_blocks_kernel!(t::Tiling)
     (; N) = t
