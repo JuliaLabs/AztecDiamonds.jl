@@ -43,3 +43,36 @@ end
     D = ka_diamond(100, Array)
     @test verify_tiling(D)
 end
+
+@testitem "rotation of tilings" begin
+    using AztecDiamonds.Colors: @colorant_str, RGBA, N0f8 # somehow using Colors: ... doesn't work in VSCode
+    include("verify_tiling.jl")
+    _to_img(D) = parent(AztecDiamonds.to_img(D))
+
+    D = diamond(100)
+
+    @testset "$rot" for (rot, replacements) in (
+            (rotr90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                colorant"red" => colorant"yellow",
+                colorant"yellow" => colorant"green",
+                colorant"green" => colorant"blue",
+                colorant"blue" => colorant"red",
+            ]),
+            (rotl90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                colorant"red" => colorant"blue",
+                colorant"blue" => colorant"green",
+                colorant"green" => colorant"yellow",
+                colorant"yellow" => colorant"red",
+            ]),
+            (rot180, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                colorant"red" => colorant"green",
+                colorant"green" => colorant"red",
+                colorant"blue" => colorant"yellow",
+                colorant"yellow" => colorant"blue",
+            ]),
+        )
+        D′ = rot(D)
+        @test verify_tiling(D′)
+        @test _to_img(D′) == replace(rot(_to_img(D)), replacements...)
+    end
+end
