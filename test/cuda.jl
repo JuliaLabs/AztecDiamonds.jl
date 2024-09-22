@@ -1,4 +1,4 @@
-@testitem "CUDA" tags=[:cuda] begin
+@testitem "CUDA" tags = [:cuda] begin
     include("verify_tiling.jl")
     using CUDA, Adapt
 

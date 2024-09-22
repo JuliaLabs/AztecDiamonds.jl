@@ -6,8 +6,8 @@ using InteractiveUtils
 
 # ╔═╡ a609b8a8-04ac-4533-9a33-61ea33805846
 begin
-	using AztecDiamonds, CairoMakie
-	CairoMakie.activate!(type = "svg")
+    using AztecDiamonds, CairoMakie
+    CairoMakie.activate!(type = "svg")
 end
 
 # ╔═╡ 84f88e89-c55e-41ba-97ad-fd561458c7e9
@@ -18,12 +18,12 @@ D = diamond(N)
 
 # ╔═╡ 1cf94d6d-a0bc-474b-b479-5b4f4c916ea5
 let
-	f = Figure()
-	ax = Axis(f[1, 1]; aspect=1)
-	plot!(ax, D; domino_padding=0)
-	lines!(ax, -N:N, parent(dr_path(D)); linewidth=3, label="DR-path", color=:orange)
-	axislegend(ax)
-	f
+    f = Figure()
+    ax = Axis(f[1, 1]; aspect = 1)
+    plot!(ax, D; domino_padding = 0)
+    lines!(ax, -N:N, parent(dr_path(D)); linewidth = 3, label = "DR-path", color = :orange)
+    axislegend(ax)
+    f
 end
 
 # ╔═╡ ab0968e2-43c7-4610-87ba-47433c003081

@@ -7,15 +7,15 @@ export Tiling, diamond, ka_diamond, dr_path
 
 @enum Edge::UInt8 NONE UP RIGHT SHOULD_FILL
 
-inds(N) = (1-N:N, 1-N:N)
+inds(N) = ((1 - N):N, (1 - N):N)
 
-struct Tiling{M<:AbstractMatrix{Edge}}
+struct Tiling{M <: AbstractMatrix{Edge}}
     N::Int
     x::OffsetMatrix{Edge, M}
 end
-Tiling(N::Int; sizehint=N) = Tiling(N, fill(NONE, inds(sizehint)))
+Tiling(N::Int; sizehint = N) = Tiling(N, fill(NONE, inds(sizehint)))
 
-in_diamond(N, i, j) = abs(2i-1) + abs(2j-1) ≤ 2N
+in_diamond(N, i, j) = abs(2i - 1) + abs(2j - 1) ≤ 2N
 Base.checkbounds(::Type{Bool}, (; N)::Tiling, i, j) = in_diamond(N, i, j)
 function Base.checkbounds(t::Tiling, i, j)
     checkbounds(Bool, t, i, j) || throw(BoundsError(t, (i, j)))
@@ -47,12 +47,12 @@ struct DiamondFaces <: Transducers.Foldable
 end
 faces((; N)::Tiling) = DiamondFaces(N)
 Base.eltype(::DiamondFaces) = Tuple{Int, Int, Bool}
-Base.length((; N)::DiamondFaces) = N * (N+1) * 2
+Base.length((; N)::DiamondFaces) = N * (N + 1) * 2
 function Transducers.__foldl__(rf::R, val::V, (; N)::DiamondFaces) where {R, V}
-    for j in 1-N:N
-        j′ = max(j, 1-j)
-        for i in j′-N:N-j′+1
-            isdotted = isodd(i+j-N)
+    for j in (1 - N):N
+        j′ = max(j, 1 - j)
+        for i in (j′ - N):(N - j′ + 1)
+            isdotted = isodd(i + j - N)
             val = @next(rf, val, (i, j, isdotted))
         end
     end
@@ -60,17 +60,17 @@ function Transducers.__foldl__(rf::R, val::V, (; N)::DiamondFaces) where {R, V}
 end
 
 
-struct BlockIterator{good, T<:Tiling} <: Transducers.Foldable
+struct BlockIterator{good, T <: Tiling} <: Transducers.Foldable
     t::T
-    BlockIterator{good}(t::T) where {good, T<:Tiling} = new{good, T}(t)
+    BlockIterator{good}(t::T) where {good, T <: Tiling} = new{good, T}(t)
 end
 Base.@propagate_inbounds function isblock(t::Tiling, i, j, ::Val{good}) where {good}
     (; N) = t
-    isdotted = isodd(i+j-N)
+    isdotted = isodd(i + j - N)
     tile = t[i, j]
-    if tile == UP && j < N && get(t, (i, j+1), NONE) == UP
+    if tile == UP && j < N && get(t, (i, j + 1), NONE) == UP
         return good == isdotted
-    elseif tile == RIGHT && i < N && get(t, (i+1, j), NONE) == RIGHT
+    elseif tile == RIGHT && i < N && get(t, (i + 1, j), NONE) == RIGHT
         return good == isdotted
     end
     return false
@@ -86,9 +86,9 @@ end
 function remove_bad_blocks!(t::Tiling)
     foreach(BlockIterator{false}(t)) do (i, j)
         @inbounds if t[i, j] == UP
-            t[i, j+1] = NONE
+            t[i, j + 1] = NONE
         else
-            t[i+1, j] = NONE
+            t[i + 1, j] = NONE
         end
         @inbounds t[i, j] = NONE
     end
@@ -101,16 +101,16 @@ function slide_tiles!(t′::Tiling, t::Tiling)
         tile = @inbounds t[i, j]
         inc = isdotted ? -1 : 1
         @inbounds if tile == UP
-            t′[i, j+inc] = UP
+            t′[i, j + inc] = UP
         elseif tile == RIGHT
-            t′[i+inc, j] = RIGHT
+            t′[i + inc, j] = RIGHT
         end
     end
     return t′
 end
 
 Base.@propagate_inbounds function is_empty_tile(t′::Tiling, i, j)
-    return t′[i, j] == NONE && get(t′, (i-1, j), NONE) != UP && get(t′, (i, j-1), NONE) != RIGHT
+    return t′[i, j] == NONE && get(t′, (i - 1, j), NONE) != UP && get(t′, (i, j - 1), NONE) != RIGHT
 end
 
 # filling
@@ -118,9 +118,9 @@ function fill_empty_blocks!(t′::Tiling)
     foreach(faces(t′)) do (i, j)
         @inbounds if is_empty_tile(t′, i, j)
             if rand(Bool)
-                t′[i, j] = t′[i, j+1] = UP
+                t′[i, j] = t′[i, j + 1] = UP
             else
-                t′[i, j] = t′[i+1, j] = RIGHT
+                t′[i, j] = t′[i + 1, j] = RIGHT
             end
         end
     end
@@ -138,7 +138,7 @@ end
 function diamond!(t, t′, N)
     for N in 1:N
         (; x) = t′
-        view(x, inds(N-1)...) .= NONE
+        view(x, inds(N - 1)...) .= NONE
         t′ = Tiling(N, x)
         t, t′ = step!(t′, t), t
     end
@@ -146,7 +146,7 @@ function diamond!(t, t′, N)
 end
 
 function diamond(N)
-    t, t′ = Tiling(0; sizehint=N), Tiling(0; sizehint=N)
+    t, t′ = Tiling(0; sizehint = N), Tiling(0; sizehint = N)
     return diamond!(t, t′, N)
 end
 

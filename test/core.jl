@@ -30,7 +30,7 @@ end
     using AztecDiamonds: DiamondFaces
 
     df = DiamondFaces(10)
-    df′ = foldl(vcat, df; init=Union{}[])
+    df′ = foldl(vcat, df; init = Union{}[])
 
     @test length(df) == length(df′)
     @test eltype(df) == eltype(df′)
@@ -52,24 +52,30 @@ end
     D = diamond(100)
 
     @testset "$rot" for (rot, replacements) in (
-            (rotr90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
-                colorant"red" => colorant"yellow",
-                colorant"yellow" => colorant"green",
-                colorant"green" => colorant"blue",
-                colorant"blue" => colorant"red",
-            ]),
-            (rotl90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
-                colorant"red" => colorant"blue",
-                colorant"blue" => colorant"green",
-                colorant"green" => colorant"yellow",
-                colorant"yellow" => colorant"red",
-            ]),
-            (rot180, Pair{RGBA{N0f8}, RGBA{N0f8}}[
-                colorant"red" => colorant"green",
-                colorant"green" => colorant"red",
-                colorant"blue" => colorant"yellow",
-                colorant"yellow" => colorant"blue",
-            ]),
+            (
+                rotr90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                    colorant"red" => colorant"yellow",
+                    colorant"yellow" => colorant"green",
+                    colorant"green" => colorant"blue",
+                    colorant"blue" => colorant"red",
+                ],
+            ),
+            (
+                rotl90, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                    colorant"red" => colorant"blue",
+                    colorant"blue" => colorant"green",
+                    colorant"green" => colorant"yellow",
+                    colorant"yellow" => colorant"red",
+                ],
+            ),
+            (
+                rot180, Pair{RGBA{N0f8}, RGBA{N0f8}}[
+                    colorant"red" => colorant"green",
+                    colorant"green" => colorant"red",
+                    colorant"blue" => colorant"yellow",
+                    colorant"yellow" => colorant"blue",
+                ],
+            ),
         )
         D′ = rot(D)
         @test verify_tiling(D′)

@@ -8,10 +8,10 @@ function to_img(t::Tiling)
     foreach(faces(t)) do (i, j, isdotted)
         if t[i, j] == UP
             col = isdotted ? colorant"red" : colorant"green"
-            img[i, j] = img[i+1, j] = col
+            img[i, j] = img[i + 1, j] = col
         elseif t[i, j] == RIGHT
             col = isdotted ? colorant"yellow" : colorant"blue"
-            img[i, j] = img[i, j+1] = col
+            img[i, j] = img[i, j + 1] = col
         end
     end
     img
@@ -21,7 +21,7 @@ function Base.show(io::IO, (; N, x)::Tiling)
     print(io, "Tiling(", N)
     if N > 0
         print(io, ", ")
-        Base._show_nonempty(IOContext(io, :compact=>true), parent(x), "")
+        Base._show_nonempty(IOContext(io, :compact => true), parent(x), "")
     end
     print(io, ")")
 end
@@ -33,20 +33,20 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
         `using ImageView; imshow(AztecDiamonds.to_img(D))` to display as an image instead.")
     t = adapt(Array, t)
     foreach(Iterators.product(inds(N)...)) do (j, i)
-        j == 1-N && println(io)
-        isdotted = isodd(i+j-N)
+        j == 1 - N && println(io)
+        isdotted = isodd(i + j - N)
         if get(t, (i, j), NONE) == UP
             color = isdotted ? :red : :green
-            if get(t, (i-1, j), NONE) == UP
+            if get(t, (i - 1, j), NONE) == UP
                 print(io, "UU")
-            elseif get(t, (i, j-1), NONE) == RIGHT
+            elseif get(t, (i, j - 1), NONE) == RIGHT
                 print(io, "UR")
             else
                 printstyled(io, "🬦🬓"; color)
             end
-        elseif get(t, (i-1, j), NONE) == UP
+        elseif get(t, (i - 1, j), NONE) == UP
             color = !isdotted ? :red : :green
-            if get(t, (i, j-1), NONE) == RIGHT
+            if get(t, (i, j - 1), NONE) == RIGHT
                 print(io, "NR")
             elseif get(t, (i, j), NONE) == RIGHT
                 print(io, "RU")
@@ -55,12 +55,12 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
             end
         elseif get(t, (i, j), NONE) == RIGHT
             color = isdotted ? :yellow : :blue
-            if get(t, (i, j-1), NONE) == RIGHT
+            if get(t, (i, j - 1), NONE) == RIGHT
                 print(io, "RR")
             else
                 printstyled(io, "🬇🬋"; color)
             end
-        elseif get(t, (i, j-1), NONE) == RIGHT
+        elseif get(t, (i, j - 1), NONE) == RIGHT
             color = !isdotted ? :yellow : :blue
             printstyled(io, "🬋🬃"; color)
         else
