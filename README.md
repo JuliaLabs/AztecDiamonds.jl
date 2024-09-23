@@ -12,7 +12,7 @@ A package for generating and analyzing [Aztec diamonds](https://en.wikipedia.org
 
 To generate an order-n Aztec diamond, simply call `diamond(n)`
 
-```julia
+```julia-repl
 julia> D = diamond(10)
 10-order Tiling{Matrix{AztecDiamonds.Edge}}
                   🬇🬋🬋🬃
@@ -37,9 +37,9 @@ julia> D = diamond(10)
                   🬇🬋🬋🬃
 ```
 
-It is recommended that you use an interactive enviroment like Pluto, VS Code or IJulia to be able to view the generated diamonds in all their glory. Alternatively, you can also view them in a separate window using the [ImageView](https://github.com/JuliaImages/ImageView.jl) package as follows:
+It is recommended that you use an interactive enviroment like Pluto, VS Code or IJulia to be able to view larger diamond tilings in all their glory. Alternatively, you can also view them in a separate window using the [ImageView](https://github.com/JuliaImages/ImageView.jl) package as follows:
 
-```julia
+```julia-repl
 julia> using ImageView
 
 julia> imshow(AztecDiamonds.to_img(D))
@@ -48,7 +48,7 @@ julia> imshow(AztecDiamonds.to_img(D))
 
 It is possible to take advantage of GPU acceleration via [KernelAbstractions.jl](https://github.com/JuliaGPU/KernelAbstractions.jl) on supported backends, e.g. CUDA:
 
-```julia
+```julia-repl
 julia> using CUDA
 
 julia> ka_diamond(200, CuArray)
@@ -57,7 +57,7 @@ julia> ka_diamond(200, CuArray)
 
 You can extract the DR-path separating the northern arctic region from the rest of the diamond using the `dr_path` function.
 
-```julia
+```julia-repl
 julia> dr_path(D)
 21-element OffsetArray(::Vector{Float64}, -10:10) with eltype Float64 with indices -10:10:
  -0.5
@@ -82,3 +82,5 @@ julia> dr_path(D)
   0.5
  -0.5
 ```
+
+To get the other DR-paths the tiling can be rotated first using the functions `rotr90`, `rotl90` or `rot180`.
