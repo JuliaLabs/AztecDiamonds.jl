@@ -70,7 +70,7 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
         elseif get(t, (i, j - 1), NONE) == RIGHT
             color = !isdotted ? :yellow : :blue
             printstyled(io, "🬋🬃"; color)
-        else
+        elseif j < 0 || in_diamond(N, i, j) # don't produce trailing spaces
             print(io, "  ")
         end
     end

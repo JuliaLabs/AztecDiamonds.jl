@@ -19,7 +19,7 @@ end
     N = 20
     D = diamond(N)
     r = repr(MIME("text/plain"), D)
-    @test length(r) > 2(2N)^2
+    @test length(r) == 2537
     r_color = repr(MIME("text/plain"), D; context = :color => true)
     @test length(r_color) == length(r) + 10length(AztecDiamonds.faces(D))
 
@@ -46,17 +46,18 @@ end
     t[2, -1] = RIGHT
     t[2, 0] = RIGHT
 
+    # TODO: should
     expected = replace(
         """
         4-order $Tiling{Matrix{AztecDiamonds.Edge}}
-              🬦🬓        \\
-              UU        \\
-              🬉🬄        \\
+              🬦🬓  \\
+              UU    \\
+              🬉🬄      \\
         🬇🬋UR  🬦🬓🬦🬓      \\
           🬉🬄🬇🬋NRRU🬋🬃    \\
-            🬇🬋RR🬋🬃      \\
-                        \\
-                        """,
+            🬇🬋RR🬋🬃    \\
+                    \\
+                  """,
         "\\" => ""
     )
     @test repr(MIME("text/plain"), t) == expected
