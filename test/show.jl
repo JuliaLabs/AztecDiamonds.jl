@@ -22,6 +22,9 @@ end
     @test length(r) > 2(2N)^2
     r_color = repr(MIME("text/plain"), D; context = :color => true)
     @test length(r_color) == length(r) + 10length(AztecDiamonds.faces(D))
+
+    r = repr(MIME("text/plain"), D; context = :displaysize => (10, 10))
+    @test contains(r, "Output too large to fit terminal")
 end
 
 @testitem "printing of malformed tilings" begin
@@ -57,4 +60,14 @@ end
         "\\" => ""
     )
     @test repr(MIME("text/plain"), t) == expected
+end
+
+@testitem "VSCode show" begin
+    using Base64
+
+    D = diamond(20)
+    @test Base.showable("juliavscode/html", D)
+    html = String(repr("juliavscode/html", D))
+    b64_png = stringmime("image/png", D)
+    @test contains(html, b64_png)
 end

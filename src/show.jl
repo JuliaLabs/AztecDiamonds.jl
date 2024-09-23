@@ -1,5 +1,6 @@
 using Colors
 import ImageShow
+using Base64: Base64EncodePipe
 
 Base.summary(io::IO, t::Tiling) = print(io, t.N, "-order ", typeof(t))
 
@@ -29,8 +30,14 @@ end
 function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
     summary(io, t)
     (; N) = t
-    displaysize(io)[2] ≥ 4N || return print(io, "\n  Output too large to fit terminal. Use \
-        `using ImageView; imshow(AztecDiamonds.to_img(D))` to display as an image instead.")
+    if displaysize(io)[2] < 4N
+        printstyled(
+            io, "\n  Output too large to fit terminal. \
+            Use `using ImageView; imshow(AztecDiamonds.to_img(D))` to display as an image instead.";
+            color = :black,
+        )
+        return nothing
+    end
     t = adapt(Array, t)
     foreach(Iterators.product(inds(N)...)) do (j, i)
         j == 1 - N && println(io)
@@ -75,4 +82,15 @@ function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
     io = IOContext(io, :full_fidelity => true)
     img = to_img(adapt(Array, t))
     show(io, MIME("image/png"), img; kw...)
+end
+
+Base.showable(::MIME"juliavscode/html", (; N)::Tiling) = N > 0
+
+function Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...)
+    img = to_img(adapt(Array, t))
+    print(io, "<img src='data:image/gif;base64,")
+    b64_io = IOContext(Base64EncodePipe(io), :full_fidelity => true)
+    show(b64_io, MIME("image/png"), img; kw...)
+    close(b64_io)
+    print(io, "' style='width: 100%; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
 end
