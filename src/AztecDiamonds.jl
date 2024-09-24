@@ -52,11 +52,11 @@ function Base.checkbounds(t::Tiling, i, j)
     return nothing
 end
 
-Base.@propagate_inbounds function Base.getindex(t::Tiling, i, j)
+Base.@propagate_inbounds function Base.getindex(t::Tiling, i::Integer, j::Integer)
     @boundscheck checkbounds(t, i, j)
     return t.x[i, j]
 end
-Base.@propagate_inbounds function Base.setindex!(t::Tiling, x, i, j)
+Base.@propagate_inbounds function Base.setindex!(t::Tiling, x, i::Integer, j::Integer)
     @boundscheck checkbounds(t, i, j)
     return setindex!(t.x, x, i, j)
 end

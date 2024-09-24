@@ -12,4 +12,7 @@
     save(path, f)
     @test isfile(path)
     @test filesize(path) > 1024 # 1 kiB
+
+    using JET
+    @test_opt Base.get_extension(AztecDiamonds, :MakieExtension).prepare_plot(D)
 end
