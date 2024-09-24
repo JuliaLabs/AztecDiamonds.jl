@@ -2,7 +2,7 @@ using Colors
 import ImageShow
 using Base64: Base64EncodePipe
 
-Base.summary(io::IO, t::Tiling) = print(io, t.N, "-order ", typeof(t))
+Base.summary(io::IO, t::Tiling) = print(io, "Order-", t.N, " ", typeof(t))
 
 function to_img(t::Tiling)
     img = fill(colorant"transparent", inds(t.N))

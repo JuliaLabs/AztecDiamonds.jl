@@ -14,7 +14,7 @@ To generate an order-n Aztec diamond, simply call `diamond(n)`
 
 ```julia-repl
 julia> D = diamond(10)
-10-order Tiling{Matrix{AztecDiamonds.Edge}}
+Order-10 Tiling{Matrix{AztecDiamonds.Edge}}
                   🬇🬋🬋🬃
                 🬇🬋🬋🬃🬇🬋🬋🬃
               🬇🬋🬋🬃🬇🬋🬋🬃🬇🬋🬋🬃
