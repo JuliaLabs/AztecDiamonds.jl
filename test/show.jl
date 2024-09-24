@@ -13,7 +13,7 @@
 end
 
 @testitem "pretty printing" begin
-    @test summary(Tiling(2)) == "2-order $Tiling{Matrix{AztecDiamonds.Edge}}"
+    @test summary(Tiling(2)) == "Order-2 $Tiling{Matrix{AztecDiamonds.Edge}}"
     @test repr(Tiling(1)) == "Tiling(1, [NONE NONE; NONE NONE])"
 
     N = 20
@@ -49,7 +49,7 @@ end
     # TODO: should
     expected = replace(
         """
-        4-order $Tiling{Matrix{AztecDiamonds.Edge}}
+        Order-4 $Tiling{Matrix{AztecDiamonds.Edge}}
               🬦🬓  \\
               UU    \\
               🬉🬄      \\

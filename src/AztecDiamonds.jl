@@ -25,14 +25,14 @@ the tiling is not fully filled yet.
 
 ```jldoctest
 julia> t = Tiling(1)
-1-order Tiling{Matrix{AztecDiamonds.Edge}}
+Order-1 Tiling{Matrix{AztecDiamonds.Edge}}
 
 
 
 julia> t[0, 0] = t[1, 0] = AztecDiamonds.RIGHT;
 
 julia> t
-1-order Tiling{Matrix{AztecDiamonds.Edge}}
+Order-1 Tiling{Matrix{AztecDiamonds.Edge}}
 🬇🬋🬋🬃
 🬇🬋🬋🬃
 ```
@@ -184,7 +184,7 @@ Generates a uniformally random order N diamond tiling.
 julia> using Random; Random.seed!(1);
 
 julia> diamond(4)
-4-order Tiling{Matrix{AztecDiamonds.Edge}}
+Order-4 Tiling{Matrix{AztecDiamonds.Edge}}
       🬇🬋🬋🬃
     🬇🬋🬋🬃🬇🬋🬋🬃
   🬦🬓🬦🬓🬦🬓🬦🬓🬇🬋🬋🬃
