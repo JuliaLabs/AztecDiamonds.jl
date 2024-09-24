@@ -11,8 +11,19 @@ For an example notebook using this package, see [here](https://julia.mit.edu/Azt
 Here's a random diamond:
 
 ```@example
+using AztecDiamonds # hide
+diamond(20) # hide
+```
+
+\
+
+Diamonds are generated using the `diamond` function. For example, to generate an order 10 diamond, you can use the following code:
+
+```julia
+
+```@repl a
 using AztecDiamonds
-show(stdout, MIME("text/plain"), diamond(10))
+diamond(10)
 ```
 
 ```@index

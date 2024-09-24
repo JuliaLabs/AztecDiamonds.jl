@@ -84,9 +84,11 @@ function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
     show(io, MIME("image/png"), img; kw...)
 end
 
+Base.showable(::MIME"text/html", (; N)::Tiling) = N > 0
 Base.showable(::MIME"juliavscode/html", (; N)::Tiling) = N > 0
 
-function Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...)
+Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...) = show(io, MIME("text/html"), t; kw...)
+function Base.show(io::IO, ::MIME"text/html", t::Tiling; kw...)
     img = to_img(adapt(Array, t))
     print(io, "<img src='data:image/gif;base64,")
     b64_io = IOContext(Base64EncodePipe(io), :full_fidelity => true)

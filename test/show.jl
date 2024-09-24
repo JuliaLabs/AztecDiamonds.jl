@@ -63,12 +63,14 @@ end
     @test repr(MIME("text/plain"), t) == expected
 end
 
-@testitem "VSCode show" begin
+@testitem "HTML show" begin
     using Base64
 
     D = diamond(20)
-    @test Base.showable("juliavscode/html", D)
-    html = String(repr("juliavscode/html", D))
-    b64_png = stringmime("image/png", D)
-    @test contains(html, b64_png)
+    @testset "mime: $(repr(mime))" for mime in ["text/html", "juliavscode/html"]
+        @test Base.showable(mime, D)
+        html = String(repr(mime, D))
+        b64_png = stringmime("image/png", D)
+        @test contains(html, b64_png)
+    end
 end
