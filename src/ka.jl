@@ -79,13 +79,13 @@ end
     end
 end
 
-@kernel function zero_kernel!(t::Tiling, N)  # COV_EXCL_LINE
+@kernel function zero_kernel!(t::Tiling, N::Int)  # COV_EXCL_LINE
     I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
     @inbounds t.x[i, j] = NONE
 end
 
-function ka_diamond!(t, t′, N; backend)
+function ka_diamond!(t::Tiling, t′::Tiling, N::Int; backend)
     zero! = zero_kernel!(backend)
     remove_bad_blocks! = remove_bad_blocks_kernel!(backend)
     slide_tiles! = slide_tiles_kernel!(backend)

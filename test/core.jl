@@ -82,3 +82,13 @@ end
         @test _to_img(D′) == replace(rot(_to_img(D)), replacements...)
     end
 end
+
+@testitem "JET" begin
+    using JET
+
+    @test_opt diamond(10)
+    D = diamond(10)
+    @test_opt dr_path(D)
+    @test_opt AztecDiamonds.to_img(D)
+    @test_call show(stdout, MIME("text/plain"), D)
+end
