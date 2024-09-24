@@ -45,7 +45,7 @@ end
 end
 
 @testitem "rotation of tilings" begin
-    using AztecDiamonds.Colors: @colorant_str, RGBA, N0f8 # somehow using Colors: ... doesn't work in VSCode
+    using Colors: @colorant_str, RGBA, N0f8
     include("verify_tiling.jl")
     _to_img(D) = parent(AztecDiamonds.to_img(D))
 
