@@ -23,7 +23,7 @@ MakieExtension = ["Makie", "GeometryBasics"]
 [compat]
 Adapt = "4"
 Base64 = "1"
-Colors = "0.12"
+Colors = "0.12, 0.13"
 GeometryBasics = "0.4"
 ImageIO = "0.6"
 ImageShow = "0.3"
