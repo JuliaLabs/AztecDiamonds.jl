@@ -17,9 +17,7 @@ diamond(20) # hide
 
 \
 
-Diamonds are generated using the `diamond` function. For example, to generate an order 10 diamond, you can use the following code:
-
-```julia
+Diamonds are generated using the [`diamond`](@ref) function. For example, to generate an order 10 diamond, you can use the following code:
 
 ```@repl a
 using AztecDiamonds
