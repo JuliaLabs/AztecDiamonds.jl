@@ -15,7 +15,7 @@ function to_img(t::Tiling)
             img[i, j] = img[i, j + 1] = col
         end
     end
-    img
+    return img
 end
 
 function Base.show(io::IO, (; N, x)::Tiling)
@@ -25,6 +25,7 @@ function Base.show(io::IO, (; N, x)::Tiling)
         Base._show_nonempty(IOContext(io, :compact => true), parent(x), "")
     end
     print(io, ")")
+    return nothing
 end
 
 function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
@@ -74,6 +75,7 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tiling)
             print(io, "  ")
         end
     end
+    return nothing
 end
 
 Base.showable(::MIME"image/png", (; N)::Tiling) = N > 0
@@ -82,6 +84,7 @@ function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
     io = IOContext(io, :full_fidelity => true)
     img = to_img(adapt(Array, t))
     show(io, MIME("image/png"), img; kw...)
+    return nothing
 end
 
 Base.showable(::MIME"juliavscode/html", (; N)::Tiling) = N > 0
@@ -93,4 +96,5 @@ function Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...)
     show(b64_io, MIME("image/png"), img; kw...)
     close(b64_io)
     print(io, "' style='width: 100%; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
+    return nothing
 end
