@@ -1,6 +1,5 @@
 @testitem "Makie" begin
     using CairoMakie
-    using CairoMakie: Axis
 
     D = diamond(100)
 
