@@ -6,6 +6,9 @@
 
     dr = dr_path(D)
     @test dr[end] == -0.5
+
+    dr = dr_path(D, 10)
+    @test dr[end] == -10.5
 end
 
 @testitem "Tiling" begin
