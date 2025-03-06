@@ -1,10 +1,10 @@
-function dr_path(t::Tiling)
+function dr_path(t::Tiling, offset::Int = 0)
     (; x, N) = t
-    y = OffsetVector{Float64}(undef, -N:N)
-    y[-N] = -0.5
+    y = OffsetVector{Float64}(undef, (-N + offset):(N - offset))
+    y[begin] = -0.5 - offset
     prev = UP
-    i = -1
-    for j in (1 - N):N
+    i = -1 - offset
+    for j in (1 - N + offset):(N - offset)
         @assert checkbounds(Bool, t, i + 1, j)
         tile = x[i + 1, j]
         if prev == RIGHT
