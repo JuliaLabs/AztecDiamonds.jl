@@ -3,12 +3,15 @@ using KernelAbstractions, Adapt
 Adapt.adapt_structure(to, (; N, x)::Tiling) = Tiling(N, adapt(to, x))
 KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x)
 
-# destruction
-@kernel function remove_bad_blocks_kernel!(t::Tiling)  # COV_EXCL_LINE
+@kernel function remove_bad_blocks_and_slide_kernel!(t′::Tiling, t::Tiling)  # COV_EXCL_LINE
     (; N) = t
     I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
+    # zero t′
+    @inbounds t′.x[i, j] = NONE
+
+    # destruction
     @inbounds if in_diamond(N, i, j) && isblock(t, i, j, Val(false))
         if t[i, j] == UP
             t[i, j + 1] = NONE
@@ -17,13 +20,10 @@ KernelAbstractions.get_backend((; x)::Tiling) = KernelAbstractions.get_backend(x
         end
         t[i, j] = NONE
     end
-end
 
-# sliding
-@kernel function slide_tiles_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
-    (; N) = t
-    I = @index(Global, NTuple)  # COV_EXCL_LINE
-    i, j = I .- N
+    @synchronize
+
+    # sliding
 
     @inbounds if in_diamond(N, i, j)
         tile = @inbounds t[i, j]
@@ -38,11 +38,12 @@ end
 end
 
 # filling
-@kernel function fill_empty_blocks_kernel1!(t′::Tiling, scratch::OffsetMatrix)  # COV_EXCL_LINE
+@kernel function fill_empty_blocks_kernel!(t′::Tiling)  # COV_EXCL_LINE
     (; N) = t′
     I = @index(Global, NTuple)  # COV_EXCL_LINE
     i, j = I .- N
 
+    should_fill = false
     @inbounds if in_diamond(N, i, j) && is_empty_tile(t′, i, j)
         should_fill = true
         i′ = i - 1
@@ -56,20 +57,13 @@ end
                 should_fill ⊻= true
                 j′ -= 1
             end
-            if should_fill
-                scratch[i, j] = SHOULD_FILL
-            end
         end
     end
-end
 
-@kernel function fill_empty_blocks_kernel2!(t′::Tiling, scratch::OffsetMatrix)  # COV_EXCL_LINE
-    (; N) = t′
-    I = @index(Global, NTuple)  # COV_EXCL_LINE
-    i, j = I .- N
+    @synchronize
 
     @inbounds if in_diamond(N, i, j)
-        if scratch[i, j] == SHOULD_FILL
+        if should_fill
             if rand(Bool)
                 t′[i, j] = t′[i, j + 1] = UP
             else
@@ -79,35 +73,22 @@ end
     end
 end
 
-@kernel function zero_kernel!(t::Tiling, N::Int)  # COV_EXCL_LINE
-    I = @index(Global, NTuple)  # COV_EXCL_LINE
-    i, j = I .- N
-    @inbounds t.x[i, j] = NONE
-end
-
 function ka_diamond!(t::Tiling, t′::Tiling, N::Int; backend)
-    zero! = zero_kernel!(backend)
-    remove_bad_blocks! = remove_bad_blocks_kernel!(backend)
-    slide_tiles! = slide_tiles_kernel!(backend)
-    fill_empty_blocks1! = fill_empty_blocks_kernel1!(backend)
-    fill_empty_blocks2! = fill_empty_blocks_kernel2!(backend)
+    remove_bad_blocks_and_slide! = remove_bad_blocks_and_slide_kernel!(backend)
+    fill_empty_blocks! = fill_empty_blocks_kernel!(backend)
 
     t′ = Tiling(1, t′.x)
     ndrange = (2, 2)
-    fill_empty_blocks1!(t′, t.x; ndrange)
-    fill_empty_blocks2!(t′, t.x; ndrange)
+    fill_empty_blocks!(t′; ndrange)
     t, t′ = t′, t
 
     for N in 2:N
-        zero!(t′, N - 1; ndrange)
         t′ = Tiling(N, t′.x)
 
-        remove_bad_blocks!(t; ndrange)
-        slide_tiles!(t′, t; ndrange)
+        remove_bad_blocks_and_slide!(t′, t; ndrange)
 
         ndrange = (2N, 2N)
-        fill_empty_blocks1!(t′, t.x; ndrange)
-        fill_empty_blocks2!(t′, t.x; ndrange)
+        fill_empty_blocks!(t′; ndrange)
         t, t′ = t′, t
     end
     return t
