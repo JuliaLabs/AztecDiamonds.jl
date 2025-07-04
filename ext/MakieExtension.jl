@@ -48,7 +48,7 @@ function Makie.plot!(x::TilingPlot{<:Tuple{Tiling}})
     map!(t -> adapt(Array, t), x.attributes, [:t], :t_cpu)
     map!(prepare_plot, x.attributes, [:t_cpu, :domino_padding], [:tiles, :color, :arrow_pts, :arrows])
     poly!(x, x.tiles; x.color, strokewidth = x.domino_stroke)
-    arrows!(x, x.arrow_pts, x.arrows; visible = x.show_arrows)
+    arrows2d!(x, x.arrow_pts, x.arrows; visible = x.show_arrows)
     return x
 end
 
