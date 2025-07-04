@@ -1,7 +1,7 @@
 name = "AztecDiamonds"
 uuid = "8762d9c5-fcab-4007-8fd1-c6de73397726"
 authors = ["Simeon David Schaub <schaub@mit.edu> and contributors"]
-version = "0.2.6"
+version = "0.2.7"
 
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
@@ -28,7 +28,7 @@ GeometryBasics = "0.4, 0.5"
 ImageIO = "0.6"
 ImageShow = "0.3"
 KernelAbstractions = "0.9"
-Makie = "0.21, 0.22"
+Makie = "0.24"
 OffsetArrays = "1"
 Transducers = "0.4"
-julia = "1.9"
+julia = "1.10"

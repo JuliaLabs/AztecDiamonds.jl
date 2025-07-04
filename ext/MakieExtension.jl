@@ -8,7 +8,7 @@ using Adapt: adapt
 using AztecDiamonds: Tiling, faces, UP, RIGHT
 import AztecDiamonds: tilingplot, tilingplot!
 
-function prepare_plot(t::Tiling; pad = 0.1f0)
+function prepare_plot(t::Tiling, pad = 0.1f0)
     tiles = Rect2f[]
     colors = RGB{Colors.N0f8}[]
     arrow_pts, arrows = Point2f[], Vec2f[]
@@ -45,10 +45,10 @@ end
 Makie.plottype(::Tiling) = TilingPlot
 
 function Makie.plot!(x::TilingPlot{<:Tuple{Tiling}})
-    t = adapt(Array, x[:t][])
-    tiles, colors, arrow_pts, arrows = prepare_plot(t; pad = x.domino_padding[])
-    poly!(x, tiles; color = colors, strokewidth = x.domino_stroke)
-    x.show_arrows[] && arrows!(x, arrow_pts, arrows)
+    map!(t -> adapt(Array, t), x.attributes, [:t], :t_cpu)
+    map!(prepare_plot, x.attributes, [:t_cpu, :domino_padding], [:tiles, :color, :arrow_pts, :arrows])
+    poly!(x, x.tiles; x.color, strokewidth = x.domino_stroke)
+    arrows2d!(x, x.arrow_pts, x.arrows; visible = x.show_arrows)
     return x
 end
 
