@@ -15,7 +15,7 @@ steps:
   - label: "Pluto Example Notebook"
     plugins:
       - JuliaCI/julia#v1:
-          version: "1"
+          version: "1.10"
     agents:
       queue: "juliagpu"
       cuda: "*"
