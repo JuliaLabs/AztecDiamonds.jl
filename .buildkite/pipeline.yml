@@ -24,7 +24,7 @@ steps:
         tmpenv = mktempdir()
         Pkg.activate(tmpenv)
         Pkg.add([
-          Pkg.PackageSpec(name="PlutoSliderServer", version="0.3.2-0.3"),
+          Pkg.PackageSpec(name="PlutoSliderServer", version="1"),
           Pkg.PackageSpec(name="Documenter", version="1"),
           Pkg.PackageSpec(name="Pluto"),
         ])
