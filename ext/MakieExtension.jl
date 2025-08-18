@@ -10,12 +10,12 @@ import AztecDiamonds: tilingplot, tilingplot!
 
 function prepare_plot(t::Tiling, pad = 0.1f0)
     tiles = Rect2f[]
-    colors = RGB{Colors.N0f8}[]
+    colors = Int[]
     arrow_pts, arrows = Point2f[], Vec2f[]
     foreach(faces(t)) do (i, j, isdotted)
         if t[i, j] == UP
             r = Rect2f(j - 1 + pad, i - 1 + pad, 1 - 2pad, 2 - 2pad)
-            col = isdotted ? colorant"red" : colorant"green"
+            col = isdotted ? 1 : 2
             push!(tiles, r)
             push!(colors, col)
             off = isdotted ? -0.3f0 : 0.3f0
@@ -23,7 +23,7 @@ function prepare_plot(t::Tiling, pad = 0.1f0)
             push!(arrows, Point2f(isdotted ? -0.5f0 : 0.5f0, 0))
         elseif t[i, j] == RIGHT
             r = Rect2f(j - 1 + pad, i - 1 + pad, 2 - 2pad, 1 - 2pad)
-            col = isdotted ? colorant"yellow" : colorant"blue"
+            col = isdotted ? 3 : 4
             push!(tiles, r)
             push!(colors, col)
             off = isdotted ? -0.3f0 : 0.3f0
@@ -39,6 +39,8 @@ end
         show_arrows = false,
         domino_padding = 0.1f0,
         domino_stroke = 0,
+        colormap = [colorant"red", colorant"green", colorant"yellow", colorant"blue"],
+        alpha = 1.0f0,
     )
 end
 
@@ -47,7 +49,7 @@ Makie.plottype(::Tiling) = TilingPlot
 function Makie.plot!(x::TilingPlot{<:Tuple{Tiling}})
     map!(t -> adapt(Array, t), x.attributes, [:t], :t_cpu)
     map!(prepare_plot, x.attributes, [:t_cpu, :domino_padding], [:tiles, :color, :arrow_pts, :arrows])
-    poly!(x, x.tiles; x.color, strokewidth = x.domino_stroke)
+    poly!(x, x.tiles; x.color, strokewidth = x.domino_stroke, x.colormap, x.alpha)
     arrows2d!(x, x.arrow_pts, x.arrows; visible = x.show_arrows)
     return x
 end
