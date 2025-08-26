@@ -1,0 +1,7 @@
+[deps]
+AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
+OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
+
+[sources]
+AztecDiamonds = {path = ".."}

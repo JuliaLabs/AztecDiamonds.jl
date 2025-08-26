@@ -95,6 +95,6 @@ function Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...)
     b64_io = IOContext(Base64EncodePipe(io), :full_fidelity => true)
     show(b64_io, MIME("image/png"), img; kw...)
     close(b64_io)
-    print(io, "' style='width: 100%; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
+    print(io, "' style='width: 500px; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
     return nothing
 end

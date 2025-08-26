@@ -29,7 +29,7 @@ end
         tile = @inbounds t[i, j]
         isdotted = isodd(i + j - N)
         inc = ifelse(isdotted, -1, 1)
-        @inbounds if tile == UP
+        if tile == UP
             t′[i, j + inc] = UP
         elseif tile == RIGHT
             t′[i + inc, j] = RIGHT
@@ -125,6 +125,81 @@ function ka_diamond(N::Int, ArrayT::Type{<:AbstractArray})
     mem = ntuple(_ -> fill!(ArrayT{Edge}(undef, 2N, 2N), NONE), 2)
     t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
     return ka_diamond!(t, t′, N; backend = KernelAbstractions.get_backend(mem[1]))
+end
+
+@kernel function shuffling_kernel!(t′::Tiling, @Const(t::Tiling))  # COV_EXCL_LINE
+    (; N) = t
+    k = @index(Global)  # COV_EXCL_LINE
+
+    i, j = k - 1, 1 - k
+    @inbounds if k ≤ N
+        tile = t.x[i, j]
+        if tile == UP
+            t′.x[i, j - 1] = UP
+        elseif tile == RIGHT
+            t′.x[i - 1, j] = RIGHT
+        end
+    end
+
+    @inbounds while i < N
+        i += 1
+        tile = t.x[i, j]
+
+        if k > N && tile == UP
+            t′.x[i, j + 1] = UP
+            continue
+        end
+
+        if tile == UP
+            t.x[i, j + 1] == UP && continue
+            t′.x[i, j + 1] = UP
+        elseif tile == RIGHT
+            if k == 1 || t.x[i + 1, j] != RIGHT
+                t′.x[i + 1, j] = RIGHT
+            end
+        end
+
+        j += 1
+        tile = t.x[i, j]
+        if tile == RIGHT
+            t.x[i - 1, j] == RIGHT && continue
+            t′.x[i - 1, j] = RIGHT
+        elseif tile == UP
+            t′.x[i, j - 1] = UP
+        end
+    end
+end
+
+function ka_diamond2!(t::Tiling, t′::Tiling, N::Int; backend)
+    zero! = zero_kernel!(backend)
+    shuffling! = shuffling_kernel!(backend)
+    fill_empty_blocks1! = fill_empty_blocks_kernel1!(backend)
+    fill_empty_blocks2! = fill_empty_blocks_kernel2!(backend)
+
+    t′ = Tiling(1, t′.x)
+    ndrange = (2, 2)
+    fill_empty_blocks1!(t′, t.x; ndrange)
+    fill_empty_blocks2!(t′, t.x; ndrange)
+    t, t′ = t′, t
+
+    for N in 2:N
+        zero!(t′, N - 1; ndrange)
+        t′ = Tiling(N, t′.x)
+
+        shuffling!(t′, t; ndrange = N)
+
+        ndrange = (2N, 2N)
+        fill_empty_blocks1!(t′, t.x; ndrange)
+        fill_empty_blocks2!(t′, t.x; ndrange)
+        t, t′ = t′, t
+    end
+    return t
+end
+
+function ka_diamond2(N::Int, ArrayT::Type{<:AbstractArray})
+    mem = ntuple(_ -> fill!(ArrayT{Edge}(undef, 2N, 2N), NONE), 2)
+    t, t′ = map(x -> Tiling(0, OffsetMatrix(x, inds(N))), mem)
+    return ka_diamond2!(t, t′, N; backend = KernelAbstractions.get_backend(mem[1]))
 end
 
 # rotation of tilings
