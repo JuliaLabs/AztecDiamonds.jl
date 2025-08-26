@@ -91,9 +91,10 @@ function test_kernel!(x)
     end
 end
 
-n = 4
+n = 20
 x = ROCArray{Int}(undef, n, n)
-@device_code_llvm @roc groupsize = (1, 1, 1) gridsize = (n, n, 1) cooperative = true test_kernel!(x)
+@roc groupsize = (1, 1, 1) gridsize = (n, n, 1) cooperative = true test_kernel!(x)
+x
 
 function shuffling_kernel!(x′, x, N, foo)
     block_row, block_col = workgroupIdx().x, workgroupIdx().y
@@ -108,7 +109,7 @@ function shuffling_kernel!(x′, x, N, foo)
         k, l = workitemIdx().x, workitemIdx().y
 
         inbounds′ = i ≤ N + 1 && j ≤ N + 1
-        @inbounds if k ≤ 2 || l ≤ 1
+        @inbounds if k ≤ 2 || l ≤ 2
             t = inbounds′ ? x′[i, j] : 0x00
             tmp[k, 2l - 1] = t & 0x0f
             tmp[k, 2l] = t >> 4
@@ -156,7 +157,8 @@ function shuffling_kernel!(x′, x, N, foo)
         AMDGPU.Device.sync_workgroup()
 
         should_fill = false
-        if inbounds
+        t = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
+        if inbounds && l != workgroupDim().y
             for l in l:-1:1
                 tmp[k, 2l - 1] == tmp[k, 2l] == 0x00 || break
                 should_fill ⊻= true
@@ -182,8 +184,8 @@ function shuffling_kernel!(x′, x, N, foo)
         AMDGPU.Device.sync_workgroup()
 
         if inbounds′
-            if (workgroupIdx().x != 1 && k ≤ 2) || (workgroupIdx().y != 1 && l ≤ 1)
-                return nothing
+            if ((workgroupIdx().x != 1 && k ≤ 2) && t >> 4 != 0x00 || (workgroupIdx().y != 1 && l ≤ 2)) && t >> 4 != 0x00
+                @goto barrier
             end
             @inbounds x′[i, j] = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
         end
@@ -203,15 +205,19 @@ function DiagonalTiling(N::Int)
     for N in 0:N
         fill!(x′, 0x00)
         foo = copy(x′)
-        @roc groupsize = (wavefrontsize, cus, 1) gridsize = (cld(N + 1, wavefrontsize - 2), cld(N + 1, cus - 2), 1) #=
+        @roc groupsize = (wavefrontsize, cus, 1) gridsize = @show((cld(N + 1, wavefrontsize - 2), cld(N + 1, cus - 2), 1)) #=
           =# shmem = (wavefrontsize + 2) * (2cus + 1) cooperative = true shuffling_kernel!(x′, x, N, foo)
-        @show N
         x, x′ = x′, x
     end
-    return DiagonalTiling(N, Array(foo))
+    return DiagonalTiling(N, Array(foo)), DiagonalTiling(N, Array(x)), DiagonalTiling(N, Array(x′))
 end
 
-Tiling(DiagonalTiling(10))
+d = DiagonalTiling(32)
+Tiling(d[1])
+Tiling(d[2])
+Tiling(d[3])
+Tiling(d[1])
+Tiling(d[2])
 
 #function shuffle((; N, x)::DiagonalTiling)
 #    x = ROCArray(x)
