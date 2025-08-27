@@ -1,5 +1,7 @@
 using AztecDiamonds, OffsetArrays
 using AztecDiamonds: Edge, UP, RIGHT, NONE
+using ImageShow, Colors
+using Base64: Base64EncodePipe
 
 struct DiagonalTiling{M <: AbstractMatrix{UInt8}}
     N::Int
@@ -16,6 +18,41 @@ module Node
     const (^) = T(0x02)
     const (<) = T(0x03)
     const (>) = T(0x04)
+end
+
+function to_img((; N, x)::DiagonalTiling)
+    x′ = OffsetArray(similar(x, ARGB32, (2N, 2N)), (1 - N):N, (1 - N):N)
+    fill!(x′, colorant"transparent")
+    for I in CartesianIndices(x)
+        i, j = Tuple(I)
+        for k in 0:1
+            i′ = j + k - i
+            j′ = j - 1 + i - N
+            node = Node.T((x[I] >> 4k) & 0x0f)
+            if node == Node.:v# && checkbounds(Bool, x′, i′, j′)
+                x′[i′, j′] = k == 0 ? colorant"red" : colorant"green"
+            elseif node == Node.:^
+                x′[i′, j′] = k == 0 ? colorant"green" : colorant"red"
+            elseif node == Node.:<# && checkbounds(Bool, x′, i′, j′)
+                x′[i′, j′] = k == 0 ? colorant"yellow" : colorant"blue"
+            elseif node == Node.:>
+                x′[i′, j′] = k == 0 ? colorant"blue" : colorant"yellow"
+            elseif node != Node.EMPTY
+                x′[i′, j′] = colorant"magenta"
+            end
+        end
+    end
+    return parent(x′)
+end
+
+function Base.show(io::IO, ::MIME"juliavscode/html", t::DiagonalTiling; kw...)
+    img = to_img(t) #adapt(Array, t))
+    print(io, "<img src='data:image/gif;base64,")
+    b64_io = IOContext(Base64EncodePipe(io), :full_fidelity => true)
+    show(b64_io, MIME("image/png"), img; kw...)
+    close(b64_io)
+    print(io, "' style='width: 500px; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
+    return nothing
 end
 
 function AztecDiamonds.Tiling((; N, x)::DiagonalTiling)
@@ -113,17 +150,23 @@ function shuffling_kernel!(x′, x, N, foo)
             t = inbounds′ ? x′[i, j] : 0x00
             tmp[k, 2l - 1] = t & 0x0f
             tmp[k, 2l] = t >> 4
-            if k > 2 && l == 2
+            if k > 1 && l == 2
                 if t >> 4 == 0x01 && k > 3
                     tmp[k - 1, 2l + 1] = 0x02
                 elseif t >> 4 == 0x03
                     tmp[k, 2l + 1] = 0x04
                 end
+            elseif k == 2 && l > 1
+                if t & 0x0f == 0x02
+                    tmp[k + 1, 2l - 2] = 0x01
+                elseif t & 0x0f == 0x03
+                    tmp[k + 1, 2l] = 0x04
+                end
             end
         end
 
         AMDGPU.Device.sync_workgroup()
-        inbounds′ && @inbounds foo[i, j] = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
+        inbounds′ && @inbounds AMDGPU.@atomic foo[i, j] |= tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
 
         inbounds = i ≤ N && j ≤ N
         tile = inbounds ? @inbounds(x[i, j]) : 0x00
@@ -157,8 +200,8 @@ function shuffling_kernel!(x′, x, N, foo)
         AMDGPU.Device.sync_workgroup()
 
         should_fill = false
-        t = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
-        if inbounds && l != workgroupDim().y
+        t = @inbounds tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
+        if inbounds && l < workgroupDim().y && k < workgroupDim().x
             for l in l:-1:1
                 tmp[k, 2l - 1] == tmp[k, 2l] == 0x00 || break
                 should_fill ⊻= true
@@ -184,10 +227,11 @@ function shuffling_kernel!(x′, x, N, foo)
         AMDGPU.Device.sync_workgroup()
 
         if inbounds′
-            if ((workgroupIdx().x != 1 && k ≤ 2) && t >> 4 != 0x00 || (workgroupIdx().y != 1 && l ≤ 2)) && t >> 4 != 0x00
+            if (workgroupIdx().x != 1 && k ≤ 1) || (workgroupIdx().y != 1 && l ≤ 1)
+                #((workgroupIdx().x != 1 && k ≤ 2) || (workgroupIdx().y != 1 && l ≤ 2)) && t & 0x0f != 0x00 && t >> 4 != 0x00
                 @goto barrier
             end
-            @inbounds x′[i, j] = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
+            @inbounds AMDGPU.@atomic x′[i, j] |= tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
         end
 
         @label barrier
@@ -212,12 +256,12 @@ function DiagonalTiling(N::Int)
     return DiagonalTiling(N, Array(foo)), DiagonalTiling(N, Array(x)), DiagonalTiling(N, Array(x′))
 end
 
-d = DiagonalTiling(32)
-Tiling(d[1])
-Tiling(d[2])
-Tiling(d[3])
-Tiling(d[1])
-Tiling(d[2])
+d = DiagonalTiling(70)
+d[1]
+d[2]
+d[3]
+d[1]
+d[2]
 
 #function shuffle((; N, x)::DiagonalTiling)
 #    x = ROCArray(x)
