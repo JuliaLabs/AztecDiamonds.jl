@@ -4,7 +4,8 @@ using Base64: Base64EncodePipe
 
 Base.summary(io::IO, t::Tiling) = print(io, "Order-", t.N, " ", typeof(t))
 
-function to_img(t::Tiling)
+function to_img(_t::Tiling)
+    t = adapt(Array, _t)
     img = fill(colorant"transparent", inds(t.N))
     foreach(faces(t)) do (i, j, isdotted)
         if t[i, j] == UP
@@ -82,7 +83,7 @@ Base.showable(::MIME"image/png", (; N)::Tiling) = N > 0
 
 function Base.show(io::IO, ::MIME"image/png", t::Tiling; kw...)
     io = IOContext(io, :full_fidelity => true)
-    img = to_img(adapt(Array, t))
+    img = to_img(t)
     show(io, MIME("image/png"), img; kw...)
     return nothing
 end
@@ -90,11 +91,11 @@ end
 Base.showable(::MIME"juliavscode/html", (; N)::Tiling) = N > 0
 
 function Base.show(io::IO, ::MIME"juliavscode/html", t::Tiling; kw...)
-    img = to_img(adapt(Array, t))
+    img = to_img(t)
     print(io, "<img src='data:image/gif;base64,")
     b64_io = IOContext(Base64EncodePipe(io), :full_fidelity => true)
     show(b64_io, MIME("image/png"), img; kw...)
     close(b64_io)
-    print(io, "' style='width: 100%; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
+    print(io, "' style='width: 500px; max-height: 500px; object-fit: contain; image-rendering: pixelated' />")
     return nothing
 end
