@@ -5,6 +5,7 @@
     D = ka_diamond(200, CuArray)
     D_cpu = adapt(Array, D)
     @test verify_tiling(D_cpu)
+    @test AztecDiamonds.to_img(D) == AztecDiamonds.to_img(D_cpu)
 
     @testset "$rot" for rot in (rotr90, rotl90, rot180)
         D′ = rot(D)
