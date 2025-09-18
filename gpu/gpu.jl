@@ -216,7 +216,7 @@ function cooperative_shuffling_kernel!(x′, x, N, offset)
     for diag in 2:(ncols + nrows)
         block_col = diag - block_row
         if 1 ≤ block_col ≤ ncols && 1 ≤ block_row ≤ nrows
-            #@rocprintf :group "diag=%d block_row=%d block_col=%d\n" diag block_row block_col
+            #@rocprintf :group "Processing block (%d, %d)\n" block_col block_row
             shuffling_kernel!(x′, x, N, block_col, block_row)
         end
         AMDGPU.Device.sync_grid()
@@ -232,7 +232,7 @@ function DiagonalTiling(N::Int)
     config = AMDGPU.launch_configuration(@roc cooperative_shuffling_kernel!(x′, x, N, 0))
     groupsize = (wavefrontsize, config.groupsize ÷ wavefrontsize, 1)
     (; gridsize) = config
-    for N in 0:N
+    for N in 1:N
         fill!(view(x′, 1:(N + 1), 1:(N + 1)), 0x00)
         nrows = cld(N + 1, groupsize[2] - 2)
         for offset in 0:gridsize:(nrows - 1)
@@ -245,3 +245,68 @@ function DiagonalTiling(N::Int)
 end
 
 d = DiagonalTiling(1000)
+
+function shuffling_kernel2!(x′, x, N, block_col = workgroupIdx().x, block_row = workgroupIdx().y)
+    i = workitemIdx().x + (block_col - 1) * (workgroupDim().x - 2)
+    j = workitemIdx().y + (block_row - 1) * (workgroupDim().y - 1)
+
+    tmp = @ROCDynamicLocalArray(UInt8, (workgroupDim().x + 2, 2 * workgroupDim().y + 1), true)
+    k, l = workitemIdx().x, workitemIdx().y
+
+    inbounds = i ≤ N && j ≤ N
+    tile = inbounds ? @inbounds(x[i, j]) : 0x00
+
+    offset = tile == 0x21 ? Cint(-1) : Cint(1)
+    lane = unsafe_trunc(Cint, AMDGPU.Device.activelane())
+    width = unsafe_trunc(Cint, AMDGPU.Device.wavefrontsize())
+    tile′ = AMDGPU.Device.shfl(tile, clamp(lane + offset, Cint(0), width - Cint(1)))
+
+    @inbounds if tile == 0x21
+        if tile′ & 0x0f != 0x02
+            tmp[k, 2l - 1] = 0x01
+            tmp[k, 2l] = 0x02
+        end
+    elseif tile != 0x44
+        if tile & 0x0f == 0x02
+            if tile′ != 0x21
+                tmp[k + 1, 2l + 1] = 0x02
+                tmp[k + 2, 2l] = 0x01
+            end
+        elseif tile & 0x0f == 0x04
+            tmp[k, 2l] = 0x03
+            tmp[k, 2l + 1] = 0x04
+        end
+        if tile >> 4 == 0x04
+            tmp[k, 2l - 1] = 0x03
+            tmp[k + 1, 2l] = 0x04
+        end
+    end
+
+    AMDGPU.Device.sync_workgroup()
+
+    if i ≤ N + 1 && j ≤ N + 1
+        if (block_col != 1 && k ≤ 2) || (block_row != 1 && l ≤ 1)
+            return nothing
+        end
+        @inbounds x′[i, j] = tmp[k, 2l - 1] | (tmp[k, 2l] << 4)
+    end
+
+    return nothing
+end
+
+function DiagonalTiling2(N::Int, d::DiagonalTiling = DiagonalTiling(0, [0x00;;]))
+    x, x′ = ROCArray{UInt8}(undef, N + 1, N + 1), ROCArray{UInt8}(undef, N + 1, N + 1)
+    copyto!(view(x, Base.OneTo.(size(d.x))...), d.x)
+
+    wavefrontsize = Int(AMDGPU.device().wavefrontsize)
+    config = AMDGPU.launch_configuration(@roc shuffling_kernel2!(x′, x, N))
+    groupsize = (wavefrontsize, config.groupsize ÷ wavefrontsize, 1)
+
+    for N in (d.N + 1):N
+        gridsize = (cld(N + 1, groupsize[1] - 2), cld(N + 1, groupsize[2] - 1), 1)
+        @roc groupsize = groupsize gridsize = gridsize #=
+          =# shmem = (groupsize[1] + 2) * (2groupsize[2] + 1) shuffling_kernel2!(x′, x, N)
+        x, x′ = x′, x
+    end
+    return DiagonalTiling(N, x)
+end

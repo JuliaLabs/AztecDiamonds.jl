@@ -5,6 +5,7 @@ AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
 ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
 ImageShow = "4e3cecfd-b093-5904-9786-8bbb286a6a31"
+KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 
 [sources]
