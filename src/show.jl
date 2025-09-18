@@ -4,8 +4,7 @@ using Base64: Base64EncodePipe
 
 Base.summary(io::IO, t::Tiling) = print(io, "Order-", t.N, " ", typeof(t))
 
-function to_img(_t::Tiling)
-    t = adapt(Array, _t)
+function to_img(t::Tiling{Matrix{Edge}})
     img = fill(colorant"transparent", inds(t.N))
     foreach(faces(t)) do (i, j, isdotted)
         if t[i, j] == UP
@@ -18,6 +17,7 @@ function to_img(_t::Tiling)
     end
     return img
 end
+to_img(t::Tiling) = to_img(adapt(Array, t))
 
 function Base.show(io::IO, (; N, x)::Tiling)
     print(io, "Tiling(", N)
