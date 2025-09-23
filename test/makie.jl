@@ -11,7 +11,7 @@
     path = tempname() * ".png"
     save(path, f)
     @test isfile(path)
-    @test filesize(path) > 1024 # 1 kiB
+    @test filesize(path) > 100 * 1024 # 100 kiB
 
     using JET
     @test_opt Base.get_extension(AztecDiamonds, :MakieExtension).prepare_plot(D)

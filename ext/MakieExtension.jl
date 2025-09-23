@@ -54,6 +54,6 @@ function Makie.plot!(x::TilingPlot{<:Tuple{Tiling}})
     return x
 end
 
-Makie.convert_arguments(::Type{<:Image}, t::Tiling) = (Makie.EndPoints(-t.N, t.N), Makie.EndPoints(-t.N, t.N), to_img(t))
+Makie.convert_arguments(::Type{<:Image}, t::Tiling) = (Makie.EndPoints(-t.N, t.N), Makie.EndPoints(-t.N, t.N), parent(to_img(t)))
 
 end
