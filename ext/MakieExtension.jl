@@ -5,7 +5,7 @@ using GeometryBasics: Vec2f, Point2f, Rect2f
 using Colors
 using Adapt: adapt
 
-using AztecDiamonds: Tiling, faces, UP, RIGHT
+using AztecDiamonds: Tiling, faces, UP, RIGHT, to_img
 import AztecDiamonds: tilingplot, tilingplot!
 
 function prepare_plot(t::Tiling, pad = 0.1f0)
@@ -53,5 +53,7 @@ function Makie.plot!(x::TilingPlot{<:Tuple{Tiling}})
     arrows2d!(x, x.arrow_pts, x.arrows; visible = x.show_arrows)
     return x
 end
+
+Makie.convert_arguments(::Type{<:Image}, t::Tiling) = (Makie.EndPoints(-t.N, t.N), Makie.EndPoints(-t.N, t.N), parent(to_img(t)))
 
 end
