@@ -47,7 +47,6 @@ steps:
           devbranch="main",
           dirname="examples",
           target="examples",
-          forcepush=true,
           push_preview=true,
         )'
     if: build.message !~ /\[skip tests\]/
