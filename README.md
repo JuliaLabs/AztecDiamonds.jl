@@ -5,6 +5,7 @@
 [![Build Status](https://github.com/JuliaLabs/AztecDiamonds.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaLabs/AztecDiamonds.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![GPU Build status](https://badge.buildkite.com/5f5d7b845c4e84af3c2039b8e275edf1ac75d498a5c0cb3e95.svg?branch=main)](https://buildkite.com/julialang/aztecdiamonds-dot-jl)
 [![Coverage](https://codecov.io/gh/JuliaLabs/AztecDiamonds.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaLabs/AztecDiamonds.jl)
+[![DOI](https://zenodo.org/badge/587774430.svg)](https://doi.org/10.5281/zenodo.19049059)
 
 A package for generating and analyzing [Aztec diamonds](https://en.wikipedia.org/wiki/Aztec_diamond)
 
