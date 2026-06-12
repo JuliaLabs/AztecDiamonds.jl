@@ -7,8 +7,7 @@ steps:
       - JuliaCI/julia-coverage#v1:
           codecov: true
     agents:
-      queue: "juliagpu"
-      cuda: "*"
+      queue: "cuda"
     if: build.message !~ /\[skip tests\]/
     timeout_in_minutes: 30
 
@@ -17,8 +16,7 @@ steps:
       - JuliaCI/julia#v1:
           version: "1.10"
     agents:
-      queue: "juliagpu"
-      cuda: "*"
+      queue: "cuda"
     commands: |
       julia -e 'import Pkg
         tmpenv = mktempdir()
