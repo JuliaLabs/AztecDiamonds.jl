@@ -7,6 +7,9 @@ using InteractiveUtils
 # ╔═╡ 1bc5ea80-dc1c-11f0-bfc6-8b9c5aa8e05a
 using AztecDiamonds, CairoMakie, Random, Colors, OffsetArrays
 
+# ╔═╡ 2c4f20e1-cf2a-4521-8c82-0a815d2d16d4
+using GeometryBasics
+
 # ╔═╡ b18ec00f-039d-46d4-95ee-fa5c48951a1e
 N = 5
 
@@ -41,11 +44,57 @@ let
 		if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
 	]; alpha = 0.5, color = :black)
 	plot!(ax, D; domino_stroke = 3, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5))
+	Label(fig[0, :], "Order-$N Aztec Diamond Tiling"; font = current_axis().titlefont, tellwidth = false)
+	save("diamond$N.pdf", fig)
+
 	fig
 end
 
 # ╔═╡ 64e4983f-68eb-4afa-9979-5415a8113df8
 let N = N
+	D0 = D
+	D1 = AztecDiamonds.remove_bad_blocks!(copy(D))
+	D2 = AztecDiamonds.slide_tiles!(Tiling(N + 1), D1)
+	Random.seed!(2)
+	D3 = AztecDiamonds.fill_empty_blocks!(copy(D2))
+
+	fig = Figure(; size = (650, 700))
+	for (i, (D, title)) in enumerate(zip(
+		[D, D1, D2, D3],
+		["Original", rich("Removal of ", rich("bad tiles"; font = :bold_italic)), "After sliding", "Filling"],
+	))
+		ax = Axis(fig[fld1(i, 2), mod1(i, 2)]; autolimitaspect = 1, limits = (nothing, (-N - .1, N + .1)), title)
+		hidedecorations!(ax)
+		hidespines!(ax)
+		pad = 0.2
+		poly!(ax, [
+			Rect2f(I[1] - 1 + pad, I[2] - 1 + pad, 1 - 2pad, 1 - 2pad)
+			for I in CartesianIndices(AztecDiamonds.inds(N))
+			if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
+		]; alpha = 0.5, color = :black)
+		if D === D1
+			D1_diff = Tiling(N, ifelse.(D1.x .== D0.x, AztecDiamonds.NONE, D0.x))
+			plot!(ax, D; domino_stroke = 2, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+			plot!(ax, D1_diff; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+		elseif D === D3
+			D3_diff = Tiling(N, ifelse.(D3.x .== D2.x, AztecDiamonds.NONE, D3.x))
+			plot!(ax, D2; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+			plot!(ax, D3_diff; domino_stroke = 2, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.7))
+		else
+			plot!(ax, D; domino_stroke = 2, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+		end
+		if D === D1
+			N += 1
+		end
+	end
+	Label(fig[0, :], "Shuffling Algorithm"; font = current_axis().titlefont, tellwidth = false)
+	save("shuffling.pdf", fig)
+	fig
+end
+
+# ╔═╡ 87e61674-7842-4f96-933c-7a22025f338c
+let N = 20, D = diamond(20)
+	D0 = D
 	D1 = AztecDiamonds.remove_bad_blocks!(copy(D))
 	D2 = AztecDiamonds.slide_tiles!(Tiling(N + 1), D1)
 	Random.seed!(2)
@@ -60,18 +109,132 @@ let N = N
 		hidedecorations!(ax)
 		hidespines!(ax)
 		pad = 0.2
-		img = poly!(ax, [
+		poly!(ax, [
 			Rect2f(I[1] - 1 + pad, I[2] - 1 + pad, 1 - 2pad, 1 - 2pad)
 			for I in CartesianIndices(AztecDiamonds.inds(N))
 			if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
 		]; alpha = 0.5, color = :black)
-		plot!(ax, D; domino_stroke = 2, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = D !== D3)
+		if D === D1
+			D1_diff = Tiling(N, ifelse.(D1.x .== D0.x, AztecDiamonds.NONE, D0.x))
+			plot!(ax, D; domino_stroke = .5, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+			plot!(ax, D1_diff; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+		elseif D === D3
+			D3_diff = Tiling(N, ifelse.(D3.x .== D2.x, AztecDiamonds.NONE, D3.x))
+			plot!(ax, D2; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+			plot!(ax, D3_diff; domino_stroke = .5, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.7))
+		else
+			plot!(ax, D; domino_stroke = .5, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+		end
 		if D === D1
 			N += 1
 		end
 	end
 	Label(fig[0, :], "Shuffling Algorithm"; font = current_axis().titlefont, tellwidth = false)
-	save("shuffling.pdf", fig)
+	#save("shuffling.pdf", fig)
+	fig
+end
+
+# ╔═╡ 5ce537b4-547d-44f4-93ab-fd917a85eee1
+let N = 100, D = diamond(100)
+	D0 = D
+	D1 = AztecDiamonds.remove_bad_blocks!(copy(D))
+	D2 = AztecDiamonds.slide_tiles!(Tiling(N + 1), D1)
+	Random.seed!(2)
+	D3 = AztecDiamonds.fill_empty_blocks!(copy(D2))
+
+	fig = Figure(; size = (650, 700))
+	for (i, (D, title)) in enumerate(zip(
+		[D, D1, D2, D3],
+		["Original", "After removal of bad tiles", "After sliding", "After filling"],
+	))
+		ax = Axis(fig[fld1(i, 2), mod1(i, 2)]; autolimitaspect = 1, limits = (nothing, (-N - .1, N + .1)), title)
+		hidedecorations!(ax)
+		hidespines!(ax)
+		pad = 0.2
+		poly!(ax, [
+			Rect2f(I[1] - 1 + pad, I[2] - 1 + pad, 1 - 2pad, 1 - 2pad)
+			for I in CartesianIndices(AztecDiamonds.inds(N))
+			if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
+		]; alpha = 0.5, color = :black)
+		if D === D1
+			D1_diff = Tiling(N, ifelse.(D1.x .== D0.x, AztecDiamonds.NONE, D0.x))
+			plot!(ax, D; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+			plot!(ax, D1_diff; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+		elseif D === D3
+			D3_diff = Tiling(N, ifelse.(D3.x .== D2.x, AztecDiamonds.NONE, D3.x))
+			plot!(ax, D2; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+			plot!(ax, D3_diff; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.7))
+		else
+			plot!(ax, D; domino_stroke = 0, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5), show_arrows = true)
+		end
+		if D === D1
+			N += 1
+		end
+	end
+	Label(fig[0, :], "Shuffling Algorithm"; font = current_axis().titlefont, tellwidth = false)
+	#save("shuffling.pdf", fig)
+	fig
+end
+
+# ╔═╡ 32823d32-6438-45a0-854f-c242a121fc4c
+let
+	fig = Figure(; size = (400, 300))
+	for i in 1:2
+		ax = Axis(fig[1, i == 1 ? 1 : 3]; autolimitaspect = 1)#, limits = (nothing, (-N - .1, N + .1)))
+		hidedecorations!(ax)
+		hidespines!(ax)
+		pad = 0.2
+		poly!(ax, [
+			Rect2f(pad, 1.5 + pad, 1 - 2pad, 1 - 2pad),
+			Rect2f(pad - 1, -2.5 + pad, 1 - 2pad, 1 - 2pad),
+			Rect2f(pad - 1.5, pad - 1, 1 - 2pad, 1 - 2pad),
+			Rect2f(pad + 0.5, pad, 1 - 2pad, 1 - 2pad),
+		]; alpha = 0.5, color = :black)
+		pad = 0.1
+		color = i == 1 ? RGBA(colorant"lightgrey", 0.5) : RGBA.([colorant"blue", colorant"yellow", colorant"red", colorant"green"], 0.5)
+		poly!(ax, [
+			Rect2f(pad - 1, 1.5 + pad, 2 - 2pad, 1 - 2pad),
+			Rect2f(pad - 1, -2.5 + pad, 2 - 2pad, 1 - 2pad),
+			Rect2f(pad - 1.5, pad - 1, 1 - 2pad, 2 - 2pad),
+			Rect2f(pad + 0.5, pad - 1, 1 - 2pad, 2 - 2pad),
+		]; color, strokewidth = 3)
+		i == 2 && arrows2d!(ax, [
+			Point2f(0, 2 - 0.3),
+			Point2f(0, -2 + 0.3),
+			Point2f(-1 + 0.3, 0),
+			Point2f(1 - 0.3, 0),
+		], [
+			Vec2f(0, 0.5),
+			Vec2f(0, -0.5),
+			Vec2f(-0.5, 0),
+			Vec2f(0.5, 0),
+		])
+	end
+	ax = Axis(fig[1, 2]; limits = ((-1.25, 1.25), nothing))
+	hidedecorations!(ax)
+	hidespines!(ax)
+	arrows2d!([Point2f(-1, 0)], [Vec2f(2, 0)]; shaftwidth = 20, tipwidth = 50, tiplength = 30, color = :grey30)
+	Label(fig[0, :], "Coloring the Tiles"; font = ax.titlefont, tellwidth = false)
+	save("tile_coloring.pdf",fig)
+	fig
+end
+
+# ╔═╡ 23d9ae7c-b2bb-4807-8847-d676ac16a46f
+let
+	fig = Figure()
+	ax = Axis(fig[1, 1]; aspect = 1, limits = ((-N - .2, N + .2), (-N - .2, N + .2)), xticks = -N:N, yticks = -N:N, title = rich("Aztec Diamond Shape for ", rich("N"; font = :bold_italic), " = $N"), xgridcolor = :grey, ygridcolor = :grey, xticksvisible = false, yticksvisible = false)
+	#hidedecorations!(ax; grid = false)
+	hidespines!(ax)
+	pad = 0.2
+	poly!(ax, [
+		Rect2f(I[1] - 1 + pad, I[2] - 1 + pad, 1 - 2pad, 1 - 2pad)
+		for I in CartesianIndices(AztecDiamonds.inds(N))
+		if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
+	]; alpha = 0.5, color = :black)
+	poly!(ax, Polygon([
+		Mat2f(cospi(j), -sinpi(j), sinpi(j), cospi(j)) * Point2f(i ÷ 2, N - (i - 1) ÷ 2) for j in 0:0.5:1.5 for i in 1:2N
+	]); color = :lightgrey, strokewidth = 3, alpha = 0.5)
+	save("diamond_shape_$N.pdf", fig)
 	fig
 end
 
@@ -114,9 +277,9 @@ end
 D2 = AztecDiamonds.slide_tiles!(Tiling(N + 1), D1)
 
 # ╔═╡ 33d43fd3-7a50-41aa-9745-f61537c4ce59
-let
+let N = N + 1
 	fig = Figure()
-	ax = Axis(fig[1, 1]; autolimitaspect = 1, limits = (nothing, (-N - 1.1, N + 1.1)))
+	ax = Axis(fig[1, 1]; autolimitaspect = 1, limits = (nothing, (-N - .1, N + .1)))
 	hidedecorations!(ax)
 	hidespines!(ax)
 	pad = 0.2
@@ -135,10 +298,17 @@ begin
 	D3 = AztecDiamonds.fill_empty_blocks!(copy(D2))
 end
 
+# ╔═╡ 1abd30f8-15e5-4802-9c9c-4237f6bcc3fc
+map(identity, eachindex(D3.x))
+
+# ╔═╡ 7b3450d9-361e-4b9a-b734-49cf8204568d
+
+
 # ╔═╡ e55ba90f-706d-443a-8d8c-ad4dbe2fddfe
-let
+let N = N + 1
+	D3_diff = Tiling(N, ifelse.(D3.x .== D2.x, AztecDiamonds.NONE, D3.x))
 	fig = Figure()
-	ax = Axis(fig[1, 1]; autolimitaspect = 1, limits = (nothing, (-N - 1.1, N + 1.1)))
+	ax = Axis(fig[1, 1]; autolimitaspect = 1, limits = (nothing, (-N - .1, N + .1)))
 	hidedecorations!(ax)
 	hidespines!(ax)
 	pad = 0.2
@@ -147,7 +317,8 @@ let
 		for I in CartesianIndices(AztecDiamonds.inds(N))
 		if AztecDiamonds.in_diamond(N, I[1], I[2]) && isodd(I[1] + I[2] - N)
 	]; alpha = 0.5, color = :black)
-	plot!(ax, D3; domino_stroke = 3, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.5))
+	plot!(ax, D2; domino_stroke = 1, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.2))
+	plot!(ax, D3_diff; domino_stroke = 3, domino_padding = 0.1, colormap = RGBA.([colorant"red", colorant"green", colorant"yellow", colorant"blue"], 0.7))
 	fig
 end
 
@@ -157,6 +328,7 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 AztecDiamonds = "8762d9c5-fcab-4007-8fd1-c6de73397726"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Colors = "5ae59095-9a9b-59fe-a467-6f913c188581"
+GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
@@ -167,6 +339,7 @@ AztecDiamonds = {path = "/home/simeon/.julia/dev/AztecDiamonds"}
 AztecDiamonds = "~0.2.8"
 CairoMakie = "~0.15.7"
 Colors = "~0.13.1"
+GeometryBasics = "~0.5.10"
 OffsetArrays = "~1.17.0"
 """
 
@@ -176,7 +349,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.12.2"
 manifest_format = "2.0"
-project_hash = "3afd3c51ad159f131c823ab99b27993d5f88e535"
+project_hash = "eacf09ef0e2433abf95987a33982d7d463be6625"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -1905,12 +2078,19 @@ version = "4.1.0+0"
 # ╠═484838e1-d3a1-4746-aba6-94dcfe123133
 # ╠═507fd355-cd02-4656-9145-622544b4164e
 # ╠═64e4983f-68eb-4afa-9979-5415a8113df8
+# ╠═87e61674-7842-4f96-933c-7a22025f338c
+# ╠═5ce537b4-547d-44f4-93ab-fd917a85eee1
+# ╠═32823d32-6438-45a0-854f-c242a121fc4c
+# ╠═2c4f20e1-cf2a-4521-8c82-0a815d2d16d4
+# ╠═23d9ae7c-b2bb-4807-8847-d676ac16a46f
 # ╠═679aff7d-0224-429b-8a17-7ab391c63407
 # ╠═873cc1bf-057e-45f5-a983-8dc3fdabf9c3
 # ╠═a0b5446a-f46b-418f-8b31-f9f5a808129d
 # ╠═e0f54535-8765-476b-b771-ae3435a70b09
 # ╠═33d43fd3-7a50-41aa-9745-f61537c4ce59
 # ╠═482aaff2-abfb-42cf-bd14-fc289dd189a5
+# ╠═1abd30f8-15e5-4802-9c9c-4237f6bcc3fc
+# ╠═7b3450d9-361e-4b9a-b734-49cf8204568d
 # ╠═e55ba90f-706d-443a-8d8c-ad4dbe2fddfe
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
